@@ -16,18 +16,23 @@ namespace Mmo2d
 
         public LocalServer()
         {
+            var ip = GetLocalIPAddress();
+
             ResponseQueue = new ConcurrentQueue<ServerResponse>();
             Streams = new ConcurrentDictionary<NetworkStream, object>();
 
             var TcpListenerTask = new Task(() =>
             {
-                IPAddress localAddress = IPAddress.Parse("192.168.0.8");
+                IPAddress localAddress = IPAddress.Parse(ip);
 
                 // TcpListener server = new TcpListener(port);
                 TcpListener = new TcpListener(localAddress, RemoteServer.Port);
 
                 // Start listening for client requests.
                 TcpListener.Start();
+
+                Console.Clear();
+                Console.WriteLine("Your IP address is: {0}", ip);
 
                 // Buffer for reading data
                 Byte[] bytes = new Byte[256];
@@ -91,6 +96,19 @@ namespace Mmo2d
             });
 
             TcpListenerTask.Start(TaskScheduler.Default);
+        }
+
+        public static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("Local IP Address Not Found!");
         }
 
         public ConcurrentQueue<ServerResponse> ResponseQueue { get; private set; }
