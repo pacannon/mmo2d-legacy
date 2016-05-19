@@ -19,7 +19,7 @@ namespace Mmo2d
 
             var TcpListenerTask = new Task(() =>
             {
-                IPAddress localAddress = IPAddress.Parse("127.0.0.1");
+                IPAddress localAddress = IPAddress.Parse("192.168.0.3");
 
                 // TcpListener server = new TcpListener(port);
                 TcpListener = new TcpListener(localAddress, RemoteServer.Port);
@@ -69,6 +69,14 @@ namespace Mmo2d
 
                         // Shutdown and end connection
                         client.Close();
+                    });
+
+                    task.ContinueWith(antecedent =>
+                    {
+                        if (antecedent.Exception != null)
+                        {
+
+                        }
                     });
 
                     task.Start();                    

@@ -52,6 +52,8 @@ namespace Mmo2d
                     ResponseQueue.Enqueue(new ServerResponse { TypedCharacter = firstCharacterOfMessage });
                 }
             }, cancellationToken);
+
+            ServerResponseListener.Start();
         }
 
         public ConcurrentQueue<ServerResponse> ResponseQueue { get; set; }
