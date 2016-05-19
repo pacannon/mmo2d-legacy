@@ -14,11 +14,14 @@ namespace Example
     class MyApplication
     {
         static IServer Server { get; set; }
+        static Entity Player { get; set; }
+
 
         [STAThread]
         public static void Main()
         {
             DisplayLogin();
+            Player = new Entity();
 
             using (var game = new GameWindow())
             {
@@ -44,7 +47,10 @@ namespace Example
                             while (!Server.ResponseQueue.TryDequeue(out serverResponse))
                             { }
 
+                            //inputs for entity control
                             Console.WriteLine(serverResponse.TypedCharacter);
+                            Player.InputHandler(serverResponse);
+
                         }
                     }
                     catch (InvalidOperationException)
@@ -66,18 +72,7 @@ namespace Example
                     GL.LoadIdentity();
                     GL.Ortho(-1.0, 1.0, -1.0, 1.0, 0.0, 4.0);
 
-                    GL.Begin(PrimitiveType.Triangles);
-                    
-                    GL.Color3(Color.Red);
-                    GL.Vertex2(-1.0f, 1.0f);
-                    GL.Color3(Color.Green);
-                    GL.Vertex2(0.0f, -1.0f);
-                    GL.Color3(Color.Black);
-                    GL.Vertex2(1.0f, 1.0f);
-
-                    GL.End();
-
-                    
+                    Player.Render();
 
                     game.SwapBuffers();
                 };
@@ -214,6 +209,7 @@ namespace Example
 
         private static void BroadcastKeystroke(char c)
         {
+            //server object - sends messages to server
             Server.SendMessage(new ServerMessage { TypedCharacter = c });
         }
     }

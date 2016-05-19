@@ -21,7 +21,7 @@ namespace Mmo2d
 
             var TcpListenerTask = new Task(() =>
             {
-                IPAddress localAddress = IPAddress.Parse("192.168.0.3");
+                IPAddress localAddress = IPAddress.Parse("192.168.0.8");
 
                 // TcpListener server = new TcpListener(port);
                 TcpListener = new TcpListener(localAddress, RemoteServer.Port);
