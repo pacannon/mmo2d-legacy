@@ -67,7 +67,7 @@ namespace Example
                     GL.Ortho(-1.0, 1.0, -1.0, 1.0, 0.0, 4.0);
 
                     GL.Begin(PrimitiveType.Triangles);
-
+                    
                     GL.Color3(Color.Red);
                     GL.Vertex2(-1.0f, 1.0f);
                     GL.Color3(Color.Green);
@@ -76,6 +76,8 @@ namespace Example
                     GL.Vertex2(1.0f, 1.0f);
 
                     GL.End();
+
+                    
 
                     game.SwapBuffers();
                 };
