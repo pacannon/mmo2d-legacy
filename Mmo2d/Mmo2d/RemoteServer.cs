@@ -47,9 +47,9 @@ namespace Mmo2d
                     }
                     while (NetworkStream.DataAvailable);
 
-                    var firstCharacterOfMessage = myCompleteMessage.ToString().ToCharArray()[0];
+                    var firstCharacterOfMessage = myCompleteMessage.ToString();
 
-                    ResponseQueue.Enqueue(new ServerResponse { TypedCharacter = firstCharacterOfMessage });
+                    //ResponseQueue.Enqueue(new ServerResponse { TypedCharacter = firstCharacterOfMessage });
                 }
             }, cancellationToken);
 

@@ -9,6 +9,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Drawing;
+using Mmo2d.ServerMessages;
 
 namespace Mmo2d
 {
@@ -21,6 +22,13 @@ namespace Mmo2d
         //object size
         public float width = 0.2f;
         public float height = 0.2f;
+
+        public Guid Id { get; private set; }
+
+        public Entity(Guid id)
+        {
+            Id = id;
+        }
 
         public void Render()
         {
@@ -35,7 +43,7 @@ namespace Mmo2d
             GL.End();
         }
 
-        public void InputHandler(ServerResponse message)
+        public void InputHandler(KeyPress message)
         {
             if (message.TypedCharacter == 'w')
             {
