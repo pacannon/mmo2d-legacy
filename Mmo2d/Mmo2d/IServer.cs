@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Mmo2d.ServerMessages;
+using Mmo2d.ServerResponses;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
@@ -8,17 +10,7 @@ namespace Mmo2d
 {
     interface IServer
     {
-        void SendMessage(ServerMessage message);
-        ConcurrentQueue<ServerResponse> ResponseQueue { get; }
-    }
-
-    public class ServerMessage
-    {
-        public char TypedCharacter { get; set; }
-    }
-
-    public class ServerResponse
-    {
-        public char TypedCharacter { get; set; }
+        void SendMessage(IServerMessage message);
+        ConcurrentQueue<IServerResponse> ResponseQueue { get; }
     }
 }

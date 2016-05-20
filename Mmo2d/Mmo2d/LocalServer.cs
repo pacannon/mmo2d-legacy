@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Mmo2d.ServerMessages;
+using Mmo2d.ServerResponses;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +16,17 @@ namespace Mmo2d
     {
         public TcpListener TcpListener { get; set; }
         public ConcurrentDictionary<NetworkStream, object> Streams { get; set; }
+        public ConcurrentQueue<IServerResponse> ResponseQueue { get; private set; }
+
+        public State State { get; set; }
 
         public LocalServer()
         {
+            State = new State();
+
             var ip = GetLocalIPAddress();
 
-            ResponseQueue = new ConcurrentQueue<ServerResponse>();
+            ResponseQueue = new ConcurrentQueue<IServerResponse>();
             Streams = new ConcurrentDictionary<NetworkStream, object>();
 
             var TcpListenerTask = new Task(() =>
@@ -56,6 +64,15 @@ namespace Mmo2d
                         NetworkStream stream = client.GetStream();
                         Streams.AddOrUpdate(stream, new object(), (a, b) => { return new object(); });
 
+                        var idIssuance = new IdIssuance { Id = Guid.NewGuid()};
+
+                        string json = JsonConvert.SerializeObject(idIssuance, Formatting.Indented);
+
+                        byte[] msg = System.Text.Encoding.ASCII.GetBytes(json);
+
+                        // Send back a response.
+                        stream.Write(msg, 0, msg.Length);
+
                         int i;
 
                         // Loop to receive all the data sent by the client.
@@ -64,7 +81,8 @@ namespace Mmo2d
                             // Translate data bytes to a ASCII string.
                             data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
 
-                            ResponseQueue.Enqueue(new ServerResponse() { TypedCharacter = data.ToCharArray()[0] });
+                            var message = JsonConvert.DeserializeObject<IServerMessage>(data);
+                            SendMessage(message);
                         }
 
                         object temp;
@@ -111,21 +129,9 @@ namespace Mmo2d
             throw new Exception("Local IP Address Not Found!");
         }
 
-        public ConcurrentQueue<ServerResponse> ResponseQueue { get; private set; }
-
-        public void SendMessage(ServerMessage message)
+        public void SendMessage(IServerMessage message)
         {
-            var typedCharacter = message.TypedCharacter;
-
-            foreach (var stream in Streams.Keys)
-            {
-                byte[] msg = System.Text.Encoding.ASCII.GetBytes(typedCharacter.ToString());
-
-                // Send back a response.
-                stream.Write(msg, 0, msg.Length);
-            }
-
-            ResponseQueue.Enqueue(new ServerResponse { TypedCharacter = typedCharacter });
+            //HandleMessage(message);
         }
     }
 }
