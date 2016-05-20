@@ -15,7 +15,7 @@ namespace Mmo2d
     class LocalServer : IServer
     {
         public TcpListener TcpListener { get; set; }
-        public ConcurrentDictionary<NetworkStream, object> Streams { get; set; }
+        public ConcurrentDictionary<NetworkStream, Guid> Streams { get; set; }
         public ConcurrentQueue<IServerResponse> ResponseQueue { get; private set; }
 
         public State State { get; set; }
@@ -27,7 +27,7 @@ namespace Mmo2d
             var ip = GetLocalIPAddress();
 
             ResponseQueue = new ConcurrentQueue<IServerResponse>();
-            Streams = new ConcurrentDictionary<NetworkStream, object>();
+            Streams = new ConcurrentDictionary<NetworkStream, Guid>();
 
             var TcpListenerTask = new Task(() =>
             {
@@ -62,9 +62,12 @@ namespace Mmo2d
 
                         // Get a stream object for reading and writing
                         NetworkStream stream = client.GetStream();
-                        Streams.AddOrUpdate(stream, new object(), (a, b) => { return new object(); });
 
-                        var idIssuance = new IdIssuance { Id = Guid.NewGuid()};
+                        var id = Guid.NewGuid();
+
+                        Streams.AddOrUpdate(stream, id, (a, b) => { return id; });
+
+                        var idIssuance = new IdIssuance { Id = id };
 
                         string json = JsonConvert.SerializeObject(idIssuance, Formatting.Indented);
 
@@ -85,7 +88,7 @@ namespace Mmo2d
                             SendMessage(message);
                         }
 
-                        object temp;
+                        Guid temp;
 
                         while (!Streams.TryRemove(stream, out temp)) { }
 

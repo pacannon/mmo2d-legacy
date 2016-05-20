@@ -50,7 +50,9 @@ namespace Mmo2d
                     }
                     while (NetworkStream.DataAvailable);
 
-                    var firstCharacterOfMessage = myCompleteMessage.ToString();
+                    var data = myCompleteMessage.ToString();
+
+                    var message = JsonConvert.DeserializeObject<IServerMessage>(data);
 
                     //ResponseQueue.Enqueue(new ServerResponse { TypedCharacter = firstCharacterOfMessage });
                 }
