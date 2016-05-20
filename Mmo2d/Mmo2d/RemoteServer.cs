@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Mmo2d.ServerMessages;
+using Mmo2d.ServerResponses;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +27,7 @@ namespace Mmo2d
             TcpClient = new TcpClient(ipAddress, Port);
             NetworkStream = TcpClient.GetStream();
 
-            ResponseQueue = new ConcurrentQueue<ServerResponse>();
+            ResponseQueue = new ConcurrentQueue<IServerResponse>();
 
             ServerResponseListenerCancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = ServerResponseListenerCancellationTokenSource.Token;
@@ -56,11 +59,13 @@ namespace Mmo2d
             ServerResponseListener.Start();
         }
 
-        public ConcurrentQueue<ServerResponse> ResponseQueue { get; set; }
+        public ConcurrentQueue<IServerResponse> ResponseQueue { get; set; }
 
-        public void SendMessage(ServerMessage message)
+        public void SendMessage(IServerMessage message)
         {
-            Byte[] data = System.Text.Encoding.ASCII.GetBytes(message.TypedCharacter.ToString());
+            string json = JsonConvert.SerializeObject(message, Formatting.Indented);
+
+            Byte[] data = System.Text.Encoding.ASCII.GetBytes(json);
             NetworkStream.Write(data, 0, data.Length);
         }
 
