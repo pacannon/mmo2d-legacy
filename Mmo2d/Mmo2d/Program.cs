@@ -10,6 +10,7 @@ using System.Text;
 using Mmo2d;
 using Newtonsoft.Json;
 using Mmo2d.ServerMessages;
+using Mmo2d.ServerResponses;
 
 namespace Example
 {
@@ -41,7 +42,7 @@ namespace Example
                     {
                         while (Server.ResponseQueue.Count > 0)
                         {
-                            ServerResponse serverResponse = null;
+                            IServerResponse serverResponse = null;
 
                             while (!Server.ResponseQueue.TryDequeue(out serverResponse))
                             { }
