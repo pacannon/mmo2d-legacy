@@ -22,5 +22,17 @@ namespace Mmo2d
                 entity.Render();
             }
         }
+
+        public void Update(TimeSpan delta)
+        {
+            var entitiesCopy = Entities.ToList();
+
+            foreach (var entity in entitiesCopy)
+            {
+                entity.Update(delta, entitiesCopy);
+            }
+
+            Entities.RemoveAll(new Predicate<Entity>((e) => e.TimeSinceDeath != null));
+        }
     }
 }

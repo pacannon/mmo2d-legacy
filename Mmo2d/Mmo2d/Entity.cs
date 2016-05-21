@@ -25,27 +25,44 @@ namespace Mmo2d
 
         public long Id { get; set; }
 
+        public Color? OverriddenColor { get; set; }
+
+        public TimeSpan? TimeSinceAttack { get; set; }
+        public TimeSpan? TimeSinceDeath { get; private set; }
+
+        public const float SwordLength = 0.8f;
+        public static readonly Color GoblinColor = Color.Green;
+
         public void Render()
         {
             //renders a tringle according to the position of the top left vertex of triangle
             GL.Begin(PrimitiveType.Quads);
 
-            GL.Color3(Color.White);
+            GL.Color3(OverriddenColor ?? Color.White);
             GL.Vertex2(x - (width / 2.0), y + (height / 2.0));
 
-            GL.Color3(Color.Blue);
+            GL.Color3(OverriddenColor ?? Color.Blue);
             GL.Vertex2(x - (width / 2.0), y - (height / 2.0));
 
-            GL.Color3(Color.Gray);
+            GL.Color3(OverriddenColor ?? Color.Gray);
             GL.Vertex2(x + (width / 2.0), y - (height / 2.0));
 
-            GL.Color3(Color.Orange);
+            GL.Color3(OverriddenColor ?? Color.Orange);
             GL.Vertex2(x + (width / 2.0), y + (height / 2.0));
+
+            if (TimeSinceAttack != null && TimeSinceAttack.Value < TimeSpan.FromMilliseconds(300))
+            {
+                GL.Color3(Color.Red);
+                GL.Vertex2(x - (SwordLength / 2.0), y + (SwordLength / 2.0));
+                GL.Vertex2(x - (SwordLength / 2.0), y - (SwordLength / 2.0));
+                GL.Vertex2(x + (SwordLength / 2.0), y - (SwordLength / 2.0));
+                GL.Vertex2(x + (SwordLength / 2.0), y + (SwordLength / 2.0));
+            }
 
             GL.End();
         }
 
-        internal void InputHandler(ServerUpdatePacket message)
+        public void InputHandler(ServerUpdatePacket message)
         {
             if (message.TypedCharacter == 'w')
             {
@@ -63,6 +80,50 @@ namespace Mmo2d
             {
                 x -= 0.1f;
             }
+            else if (message.TypedCharacter == ' ')
+            {
+                TimeSinceAttack = TimeSpan.Zero;
+            }
+        }
+
+        public void Update(TimeSpan delta, List<Entity> entitiesCopy)
+        {
+            if (TimeSinceAttack != null)
+            {
+                if (TimeSinceAttack == TimeSpan.Zero)
+                {
+                    foreach (var attackedEntity in entitiesCopy.Where(e => e.OverriddenColor == GoblinColor && Attacking(e)))
+                    {
+                        attackedEntity.TimeSinceDeath = TimeSpan.Zero;
+                    }
+                }
+
+                TimeSinceAttack += delta;
+
+                if (TimeSinceAttack > TimeSpan.FromMilliseconds(1000))
+                {
+                    TimeSinceAttack = null;
+                }
+            }
+
+            if (TimeSinceDeath != null)
+            {
+                TimeSinceDeath += delta;
+            }
+        }
+
+        public bool Attacking(Entity entity)
+        {
+            if (TimeSinceAttack == TimeSpan.Zero)
+            {
+                if (Math.Abs(entity.x - x) < SwordLength &&
+                    Math.Abs(entity.y - y) < SwordLength)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
