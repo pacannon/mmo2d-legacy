@@ -12,6 +12,5 @@ namespace Mmo2d
     {
         void SendMessage(ServerUpdatePacket message);
         ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; }
-        void Update();
     }
 }
