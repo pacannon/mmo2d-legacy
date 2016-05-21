@@ -110,6 +110,8 @@ namespace Example
             }
         }
 
+        private static bool h = false;
+
         private static void Game_KeyPress(object sender, KeyPressEventArgs e)
         {
             BroadcastKeystroke(e.KeyChar);

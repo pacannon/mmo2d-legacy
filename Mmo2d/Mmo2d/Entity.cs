@@ -33,6 +33,7 @@ namespace Mmo2d
 
         public const float SwordLength = 0.4f;
         public static readonly Color GoblinColor = Color.Green;
+        public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100);
 
         public int Hits { get; set; } = 0;
 
@@ -53,7 +54,7 @@ namespace Mmo2d
             GL.Color3(OverriddenColor ?? Color.Orange);
             GL.Vertex2(x + (width / 2.0), y + (height / 2.0));
 
-            if (TimeSinceAttack != null && TimeSinceAttack.Value < TimeSpan.FromMilliseconds(300))
+            if (TimeSinceAttack != null && TimeSinceAttack.Value < SwingSwordAnimationDuration)
             {
                 GL.Color3(Color.Red);
                 GL.Vertex2(x - SwordLength / 2.0, y + SwordLength / 2.0);
@@ -89,13 +90,13 @@ namespace Mmo2d
             }
         }
 
-        public void Update(TimeSpan delta, List<Entity> entitiesCopy)
+        public void Update(TimeSpan delta, List<Entity> entities)
         {
             if (TimeSinceAttack != null)
             {
                 if (TimeSinceAttack == TimeSpan.Zero)
                 {
-                    foreach (var attackedEntity in entitiesCopy.Where(e => e.OverriddenColor == GoblinColor && Attacking(e)))
+                    foreach (var attackedEntity in entities.Where(e => e.OverriddenColor == GoblinColor && Attacking(e)))
                     {
                         attackedEntity.Hits++;
 
