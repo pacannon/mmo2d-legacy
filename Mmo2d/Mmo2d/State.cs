@@ -6,13 +6,21 @@ using System.Threading.Tasks;
 
 namespace Mmo2d
 {
-    class State
+    public class State
     {
         public List<Entity> Entities { get; set; }
 
         public State()
         {
             Entities = new List<Entity>();
+        }
+
+        public void Render()
+        {
+            foreach (var entity in Entities)
+            {
+                entity.Render();
+            }
         }
     }
 }

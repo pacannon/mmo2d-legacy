@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mmo2d.ServerMessages
 {
-    class KeyPress : IServerMessage
+    public class KeyPress : ServerMessage
     {
         public char TypedCharacter { get; set; }
     }
