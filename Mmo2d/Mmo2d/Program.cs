@@ -10,17 +10,21 @@ using System.Text;
 using Mmo2d;
 using Newtonsoft.Json;
 using Mmo2d.ServerMessages;
-using Mmo2d.ServerResponses;
+using Mmo2d.AuthoritativePackets;
 
 namespace Example
 {
     class MyApplication
     {
         static IServer Server { get; set; }
+        public static long? IssuedId { get; private set; }
+
+        public static State State;
 
         [STAThread]
         public static void Main()
         {
+            State = new State();
             DisplayLogin();
                 
             using (var game = new GameWindow())
@@ -38,25 +42,13 @@ namespace Example
 
                 game.UpdateFrame += (sender, e) =>
                 {
-                    try
-                    {
-                        while (Server.ResponseQueue.Count > 0)
-                        {
-                            IServerResponse serverResponse = null;
-
-                            while (!Server.ResponseQueue.TryDequeue(out serverResponse))
-                            { }
-
-                        }
-                    }
-                    catch (InvalidOperationException)
-                    { }
-
                     // add game logic, input handling
                     if (game.Keyboard[Key.Escape])
                     {
                         game.Exit();
                     }
+
+                    ProcessServerData();
                 };
 
                 game.RenderFrame += (sender, e) =>
@@ -68,6 +60,8 @@ namespace Example
                     GL.LoadIdentity();
                     GL.Ortho(-1.0, 1.0, -1.0, 1.0, 0.0, 4.0);
 
+                    State.Render();
+
                     game.SwapBuffers();
                 };
 
@@ -75,6 +69,44 @@ namespace Example
 
                 // Run the game at 60 updates per second
                 game.Run(60.0);
+            }
+        }
+
+        private static void ProcessServerData()
+        {
+            while (Server.ResponseQueue.Count > 0)
+            {
+                AuthoritativePacket packet = null;
+
+                bool dequeueSucceeded = false;
+
+                do
+                {
+                    try
+                    {
+                        dequeueSucceeded = Server.ResponseQueue.TryDequeue(out packet);
+                    }
+
+                    catch (InvalidOperationException)
+                    {
+                        return;
+                    }
+                }
+
+                while (!dequeueSucceeded);
+
+                Console.WriteLine("Processing packet:");
+                Console.WriteLine(packet.ToString());
+
+                if (packet.IdIssuance != null)
+                {
+                    IssuedId = packet.IdIssuance;
+                }
+
+                if (packet.State != null)
+                {
+                    State = packet.State;
+                }
             }
         }
 
@@ -118,7 +150,7 @@ namespace Example
 
         private static void HostServer()
         {
-            Server = new LocalServer();
+            Server = new HostServer();
         }
 
         private static void ConnectToServer()
@@ -144,7 +176,7 @@ namespace Example
                 }
             }
 
-            Server = new RemoteServer(input);
+            Server = new ClientServer(input);
         }
 
         private static void BroadcastKeystroke(char c)

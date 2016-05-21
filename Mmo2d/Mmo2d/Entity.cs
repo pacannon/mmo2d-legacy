@@ -13,7 +13,7 @@ using Mmo2d.ServerMessages;
 
 namespace Mmo2d
 {
-    class Entity
+    public class Entity
     {
         //position of the top left vertex of the triangle (-0.1f,0.1f) = starting position
         
@@ -23,12 +23,7 @@ namespace Mmo2d
         public float width = 0.2f;
         public float height = 0.2f;
 
-        public Guid Id { get; private set; }
-
-        public Entity(Guid id)
-        {
-            Id = id;
-        }
+        public long Id { get; set; }
 
         public void Render()
         {
