@@ -54,8 +54,10 @@ namespace Mmo2d
 
                 // This is not uniform randomness. See http://mathworld.wolfram.com/DiskPointPicking.html for more info.
                 var randomCoords = Complex.FromPolarCoordinates(randomRadius, randomAngle);
-                newlySpawnedGoblin.x = (float)randomCoords.Real + X;
-                newlySpawnedGoblin.y = (float)randomCoords.Imaginary + Y;
+
+                var randomPostion = new Vector2((float)randomCoords.Real + X, (float)randomCoords.Imaginary + Y);
+
+                newlySpawnedGoblin.Location = randomPostion;
 
                 TimeSinceLastGoblinAddition = TimeSpan.Zero;
 

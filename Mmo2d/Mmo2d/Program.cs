@@ -60,7 +60,7 @@ namespace Example
 
                     if (playerEntity != null)
                     {
-                        GL.Ortho(playerEntity.x - 1.0, playerEntity.x + 1.0, playerEntity.y - 1.0, playerEntity.y + 1.0, 0.0, 4.0);
+                        GL.Ortho(playerEntity.Location.X - 1.0, playerEntity.Location.X + 1.0, playerEntity.Location.Y - 1.0, playerEntity.Location.Y + 1.0, 0.0, 4.0);
                     }
 
                     State.Render();

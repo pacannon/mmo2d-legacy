@@ -15,13 +15,7 @@ namespace Mmo2d.ServerUpdatePackets
 
         public override string ToString()
         {
-            string json = JsonConvert.SerializeObject(this, Formatting.None,
-                new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore
-                });
-
-            return json;
+            return JsonSerializer.Serialize(this);
         }
     }
 }

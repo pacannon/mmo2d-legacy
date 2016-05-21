@@ -54,8 +54,8 @@ namespace Mmo2d
             // without ObjectCreationHandling.Replace default constructor values will be added to result
             //var deserializeSettings = new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
 
-            var serialized = JsonConvert.SerializeObject(this);
-            return JsonConvert.DeserializeObject<State>(serialized);
+            var serialized = JsonSerializer.Serialize(this);
+            return JsonSerializer.Deserialize<State>(serialized);
         }
     }
 }

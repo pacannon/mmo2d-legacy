@@ -16,10 +16,10 @@ namespace Mmo2d
 {
     public class Entity
     {
-        //position of the top left vertex of the triangle (-0.1f,0.1f) = starting position
-        
-        public float x = 0.0f;
-        public float y = 0.0f;
+        public static readonly Entity Sword = new Entity { width = SwordLength * 2.0f, height = SwordLength * 2.0f, OverriddenColor = Color.Red };
+
+        public Vector2 Location { get; set; }
+
         //object size
         public float width = 0.2f;
         public float height = 0.2f;
@@ -37,31 +37,38 @@ namespace Mmo2d
 
         public int Hits { get; set; } = 0;
 
+        public Entity EquippedSword { get; set; }
+
+        public Entity()
+        {
+        }
+
+        public Entity(Vector2 location) : this()
+        {
+            Location = location;
+        }
+
         public void Render()
         {
+            if (EquippedSword != null && TimeSinceAttack != null && TimeSinceAttack.Value < SwingSwordAnimationDuration)
+            {
+                EquippedSword.Render();
+            }
+
             //renders a tringle according to the position of the top left vertex of triangle
             GL.Begin(PrimitiveType.Quads);
 
             GL.Color3(OverriddenColor ?? Color.White);
-            GL.Vertex2(x - (width / 2.0), y + (height / 2.0));
+            GL.Vertex2(TopLeftCorner);
 
             GL.Color3(OverriddenColor ?? Color.Blue);
-            GL.Vertex2(x - (width / 2.0), y - (height / 2.0));
+            GL.Vertex2(BottomLeftCorner);
 
             GL.Color3(OverriddenColor ?? Color.Gray);
-            GL.Vertex2(x + (width / 2.0), y - (height / 2.0));
+            GL.Vertex2(BottomRightCorner);
 
             GL.Color3(OverriddenColor ?? Color.Orange);
-            GL.Vertex2(x + (width / 2.0), y + (height / 2.0));
-
-            if (TimeSinceAttack != null && TimeSinceAttack.Value < SwingSwordAnimationDuration)
-            {
-                GL.Color3(Color.Red);
-                GL.Vertex2(x - SwordLength / 2.0, y + SwordLength / 2.0);
-                GL.Vertex2(x - SwordLength / 2.0, y - SwordLength / 2.0);
-                GL.Vertex2(x + SwordLength / 2.0, y - SwordLength / 2.0);
-                GL.Vertex2(x + SwordLength / 2.0, y + SwordLength / 2.0);
-            }
+            GL.Vertex2(TopRightCorner);
 
             GL.End();
         }
@@ -70,21 +77,21 @@ namespace Mmo2d
         {
             if (message.TypedCharacter == 'w')
             {
-                y += 0.1f;
+                Location = Vector2.Add(Location, new Vector2(0.0f, 0.1f));
             }
             else if (message.TypedCharacter == 's')
             {
-                y -= 0.1f;
+                Location = Vector2.Add(Location, new Vector2(0.0f, -0.1f));
             }
             else if (message.TypedCharacter == 'd')
             {
-                x += 0.1f;
+                Location = Vector2.Add(Location, new Vector2(0.1f, 0.0f));
             }
             else if (message.TypedCharacter == 'a')
             {
-                x -= 0.1f;
+                Location = Vector2.Add(Location, new Vector2(-0.1f, 0.0f));
             }
-            else if (message.TypedCharacter == ' ')
+            else if (message.TypedCharacter == ' ' && EquippedSword != null)
             {
                 TimeSinceAttack = TimeSpan.Zero;
             }
@@ -96,7 +103,7 @@ namespace Mmo2d
             {
                 if (TimeSinceAttack == TimeSpan.Zero)
                 {
-                    foreach (var attackedEntity in entities.Where(e => e.OverriddenColor == GoblinColor && Attacking(e)))
+                    foreach (var attackedEntity in entities.Where(e => Attacking(e)))
                     {
                         attackedEntity.Hits++;
 
@@ -119,20 +126,36 @@ namespace Mmo2d
             {
                 TimeSinceDeath += delta;
             }
+
+            if (EquippedSword != null)
+            {
+                EquippedSword.Location = Location;
+            }
         }
 
         public bool Attacking(Entity entity)
         {
-            if (TimeSinceAttack == TimeSpan.Zero)
-            {
-                if (Math.Abs(entity.x - x) < SwordLength &&
-                    Math.Abs(entity.y - y) < SwordLength)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return entity.OverriddenColor == GoblinColor && EquippedSword != null && EquippedSword.Overlapping(entity) && TimeSinceAttack == TimeSpan.Zero;
         }
+
+        public bool Overlapping(Entity entity)
+        {
+            return Overlapping(entity.TopLeftCorner) || Overlapping(entity.TopRightCorner) ||
+                Overlapping(entity.BottomRightCorner) || Overlapping(entity.BottomLeftCorner);
+        }
+
+        public bool Overlapping(Vector2 location)
+        {
+            return TopEdge > location.Y && BottomEdge < location.Y && LeftEdge < location.X && RightEdge > location.X;
+        }
+
+        public float LeftEdge { get { return Location.X - width / 2.0f; } }
+        public float RightEdge { get { return Location.X + width / 2.0f; } }
+        public float TopEdge { get { return Location.Y + height / 2.0f; } }
+        public float BottomEdge { get { return Location.Y - height / 2.0f; } }
+        public Vector2 TopLeftCorner { get { return new Vector2(LeftEdge, TopEdge); } }
+        public Vector2 BottomLeftCorner { get { return new Vector2(LeftEdge, BottomEdge); } }
+        public Vector2 BottomRightCorner { get { return new Vector2(RightEdge, BottomEdge); } }
+        public Vector2 TopRightCorner { get { return new Vector2(RightEdge, TopEdge); } }
     }
 }
