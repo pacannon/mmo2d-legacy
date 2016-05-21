@@ -18,7 +18,13 @@ namespace Mmo2d
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
 
-            if (property.DeclaringType == typeof(Vector2) && property.PropertyName == "PerpendicularRight")
+            if (property.DeclaringType == typeof(Vector2) &&
+                (property.PropertyName == "PerpendicularLeft" ||
+                 property.PropertyName == "PerpendicularRight" ||
+                 property.PropertyName == "Length" ||
+                 property.PropertyName == "LengthFast" ||
+                 property.PropertyName == "LengthSquared" ||
+                 property.PropertyName == "Yx"))
             {
                 property.ShouldSerialize =
                     instance =>

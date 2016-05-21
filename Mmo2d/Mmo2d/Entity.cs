@@ -149,13 +149,21 @@ namespace Mmo2d
             return TopEdge > location.Y && BottomEdge < location.Y && LeftEdge < location.X && RightEdge > location.X;
         }
 
+        [JsonIgnore]
         public float LeftEdge { get { return Location.X - width / 2.0f; } }
+        [JsonIgnore]
         public float RightEdge { get { return Location.X + width / 2.0f; } }
+        [JsonIgnore]
         public float TopEdge { get { return Location.Y + height / 2.0f; } }
+        [JsonIgnore]
         public float BottomEdge { get { return Location.Y - height / 2.0f; } }
+        [JsonIgnore]
         public Vector2 TopLeftCorner { get { return new Vector2(LeftEdge, TopEdge); } }
+        [JsonIgnore]
         public Vector2 BottomLeftCorner { get { return new Vector2(LeftEdge, BottomEdge); } }
+        [JsonIgnore]
         public Vector2 BottomRightCorner { get { return new Vector2(RightEdge, BottomEdge); } }
+        [JsonIgnore]
         public Vector2 TopRightCorner { get { return new Vector2(RightEdge, TopEdge); } }
     }
 }
