@@ -22,13 +22,5 @@ namespace Mmo2d
                 entity.Render();
             }
         }
-
-        internal void Update()
-        {
-            foreach (var entity in Entities)
-            {
-                entity.Update();
-            }
-        }
     }
 }

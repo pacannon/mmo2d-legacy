@@ -8,6 +8,7 @@ using System.Net;
 using Mmo2d;
 using Mmo2d.AuthoritativePackets;
 using Mmo2d.ServerUpdatePackets;
+using System.Linq;
 
 namespace Example
 {
@@ -44,7 +45,6 @@ namespace Example
                     {
                         game.Exit();
                     }
-                    Server.Update();
                     ProcessServerData();
                 };
 
@@ -55,7 +55,13 @@ namespace Example
 
                     GL.MatrixMode(MatrixMode.Projection);
                     GL.LoadIdentity();
-                    GL.Ortho(-1.0, 1.0, -1.0, 1.0, 0.0, 4.0);
+
+                    var playerEntity = State.Entities.FirstOrDefault(en => en.Id == IssuedId);
+
+                    if (playerEntity != null)
+                    {
+                        GL.Ortho(playerEntity.x - 1.0, playerEntity.x + 1.0, playerEntity.y - 1.0, playerEntity.y + 1.0, 0.0, 4.0);
+                    }
 
                     State.Render();
 

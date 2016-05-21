@@ -17,35 +17,30 @@ namespace Mmo2d
     {
         //position of the top left vertex of the triangle (-0.1f,0.1f) = starting position
         
-        public float x = -0.1f;
-        public float y = 0.1f;
+        public float x = 0.0f;
+        public float y = 0.0f;
         //object size
         public float width = 0.2f;
         public float height = 0.2f;
 
         public long Id { get; set; }
 
-        internal void Update()
-        {
-            var random = new Random();
-
-            var randomDouble = random.NextDouble() -0.5;
-
-            x += (float)randomDouble/100;
-
-            randomDouble = random.NextDouble() - 0.5;
-            y += (float)randomDouble/100;
-        }
-
         public void Render()
         {
             //renders a tringle according to the position of the top left vertex of triangle
-            GL.Begin(PrimitiveType.Triangles);
+            GL.Begin(PrimitiveType.Quads);
+
+            GL.Color3(Color.White);
+            GL.Vertex2(x - (width / 2.0), y + (height / 2.0));
 
             GL.Color3(Color.Blue);
-            GL.Vertex2(x, y);
-            GL.Vertex2(x + width, y);
-            GL.Vertex2((x + 0.1f), y - height);
+            GL.Vertex2(x - (width / 2.0), y - (height / 2.0));
+
+            GL.Color3(Color.Gray);
+            GL.Vertex2(x + (width / 2.0), y - (height / 2.0));
+
+            GL.Color3(Color.Orange);
+            GL.Vertex2(x + (width / 2.0), y + (height / 2.0));
 
             GL.End();
         }
