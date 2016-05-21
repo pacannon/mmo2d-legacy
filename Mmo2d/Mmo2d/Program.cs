@@ -5,12 +5,9 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using Mmo2d;
-using Newtonsoft.Json;
-using Mmo2d.ServerMessages;
 using Mmo2d.AuthoritativePackets;
+using Mmo2d.ServerUpdatePackets;
 
 namespace Example
 {
@@ -47,7 +44,7 @@ namespace Example
                     {
                         game.Exit();
                     }
-
+                    Server.Update();
                     ProcessServerData();
                 };
 
@@ -94,9 +91,6 @@ namespace Example
                 }
 
                 while (!dequeueSucceeded);
-
-                Console.WriteLine("Processing packet:");
-                Console.WriteLine(packet.ToString());
 
                 if (packet.IdIssuance != null)
                 {
@@ -182,7 +176,7 @@ namespace Example
         private static void BroadcastKeystroke(char c)
         {
             //server object - sends messages to server
-            Server.SendMessage(new KeyPress() { TypedCharacter = c });
+            Server.SendMessage(new ServerUpdatePacket { TypedCharacter = c, PlayerId = IssuedId, });
         }
     }
 }
