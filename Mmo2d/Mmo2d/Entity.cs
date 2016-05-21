@@ -9,7 +9,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Drawing;
-using Mmo2d.ServerMessages;
+using Mmo2d.ServerUpdatePackets;
 
 namespace Mmo2d
 {
@@ -25,6 +25,18 @@ namespace Mmo2d
 
         public long Id { get; set; }
 
+        internal void Update()
+        {
+            var random = new Random();
+
+            var randomDouble = random.NextDouble() -0.5;
+
+            x += (float)randomDouble/100;
+
+            randomDouble = random.NextDouble() - 0.5;
+            y += (float)randomDouble/100;
+        }
+
         public void Render()
         {
             //renders a tringle according to the position of the top left vertex of triangle
@@ -38,7 +50,7 @@ namespace Mmo2d
             GL.End();
         }
 
-        public void InputHandler(KeyPress message)
+        internal void InputHandler(ServerUpdatePacket message)
         {
             if (message.TypedCharacter == 'w')
             {
