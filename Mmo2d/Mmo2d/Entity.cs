@@ -10,6 +10,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Drawing;
 using Mmo2d.ServerUpdatePackets;
+using Newtonsoft.Json;
 
 namespace Mmo2d
 {
@@ -30,8 +31,10 @@ namespace Mmo2d
         public TimeSpan? TimeSinceAttack { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
 
-        public const float SwordLength = 0.8f;
+        public const float SwordLength = 0.4f;
         public static readonly Color GoblinColor = Color.Green;
+
+        public int Hits { get; set; } = 0;
 
         public void Render()
         {
@@ -53,10 +56,10 @@ namespace Mmo2d
             if (TimeSinceAttack != null && TimeSinceAttack.Value < TimeSpan.FromMilliseconds(300))
             {
                 GL.Color3(Color.Red);
-                GL.Vertex2(x - (SwordLength / 2.0), y + (SwordLength / 2.0));
-                GL.Vertex2(x - (SwordLength / 2.0), y - (SwordLength / 2.0));
-                GL.Vertex2(x + (SwordLength / 2.0), y - (SwordLength / 2.0));
-                GL.Vertex2(x + (SwordLength / 2.0), y + (SwordLength / 2.0));
+                GL.Vertex2(x - SwordLength / 2.0, y + SwordLength / 2.0);
+                GL.Vertex2(x - SwordLength / 2.0, y - SwordLength / 2.0);
+                GL.Vertex2(x + SwordLength / 2.0, y - SwordLength / 2.0);
+                GL.Vertex2(x + SwordLength / 2.0, y + SwordLength / 2.0);
             }
 
             GL.End();
@@ -94,7 +97,12 @@ namespace Mmo2d
                 {
                     foreach (var attackedEntity in entitiesCopy.Where(e => e.OverriddenColor == GoblinColor && Attacking(e)))
                     {
-                        attackedEntity.TimeSinceDeath = TimeSpan.Zero;
+                        attackedEntity.Hits++;
+
+                        if (attackedEntity.Hits >= 4)
+                        {
+                            attackedEntity.TimeSinceDeath = TimeSpan.Zero;
+                        }
                     }
                 }
 
