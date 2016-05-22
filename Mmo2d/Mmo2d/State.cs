@@ -2,6 +2,7 @@
 using OpenTK;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace Mmo2d
             ElapsedTime += delta;
 
             Updates++;
-               var entitiesCopy = Entities.ToList();
+            var entitiesCopy = Entities.ToList();
 
             foreach (var entity in entitiesCopy)
             {
@@ -43,7 +44,10 @@ namespace Mmo2d
 
             Entities.RemoveAll(new Predicate<Entity>((e) => e.TimeSinceDeath != null));
 
-            GoblinSpawner.Update(delta, Entities);
+            if (GoblinSpawner != null)
+            {
+                GoblinSpawner.Update(delta, Entities);
+            }
         }
 
         public State Clone()
@@ -54,8 +58,41 @@ namespace Mmo2d
             // without ObjectCreationHandling.Replace default constructor values will be added to result
             //var deserializeSettings = new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
 
-            var serialized = JsonSerializer.Serialize(this);
+            StringWriter sw = new StringWriter();
+            JsonTextWriter writer = new JsonTextWriter(sw);
+
+            ToJsonString(writer);
+
+            var serialized = sw.ToString();
+                
+                
             return JsonSerializer.Deserialize<State>(serialized);
+        }
+
+        public void ToJsonString(JsonTextWriter writer)
+        {
+
+            // {
+            writer.WriteStartObject();
+
+            // "name" : "Jerry"
+            writer.WritePropertyName("ElapsedTime");
+            writer.WriteValue(ElapsedTime);
+
+            writer.WritePropertyName("Updates");
+            writer.WriteValue(Updates);
+
+            // "likes": ["Comedy", "Superman"]
+            writer.WritePropertyName("Entities");
+            writer.WriteStartArray();
+            foreach (var like in Entities)
+            {
+                like.ToJsonString(writer);
+            }
+            writer.WriteEndArray();
+
+            // }
+            writer.WriteEndObject();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Mmo2d
 {
     public class Entity
     {
-        public static readonly Entity Sword = new Entity { width = SwordLength * 2.0f, height = SwordLength * 2.0f, OverriddenColor = Color.Red };
+        public static readonly Entity Sword = null;// new Entity { width = SwordLength * 2.0f, height = SwordLength * 2.0f, OverriddenColor = Color.Red };
 
         public Vector2 Location { get; set; }
 
@@ -165,5 +165,30 @@ namespace Mmo2d
         public Vector2 BottomRightCorner { get { return new Vector2(RightEdge, BottomEdge); } }
         [JsonIgnore]
         public Vector2 TopRightCorner { get { return new Vector2(RightEdge, TopEdge); } }
+        
+
+        public void ToJsonString(JsonTextWriter writer)
+        {
+            writer.WriteStartObject();
+
+            writer.WritePropertyName("width");
+            writer.WriteValue(width);
+            writer.WritePropertyName("height");
+            writer.WriteValue(height);
+            writer.WritePropertyName("Location");
+            writer.WriteStartObject();
+            writer.WritePropertyName("X");
+            writer.WriteValue(Location.X);
+            writer.WritePropertyName("Y");
+            writer.WriteValue(Location.Y);
+            writer.WriteEndObject();
+            writer.WritePropertyName("Id");
+            writer.WriteValue(Id);
+            writer.WritePropertyName("Hits");
+            writer.WriteValue(Hits);
+
+            writer.WriteEndObject();
+
+        }
     }
 }

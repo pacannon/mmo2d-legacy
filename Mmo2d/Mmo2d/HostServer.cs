@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,14 +33,23 @@ namespace Mmo2d
         public HostServer()
         {
             Stopwatch = Stopwatch.StartNew();
-            State = new State { GoblinSpawner = new GoblinSpawner(Vector2.Zero) };
+            State = new State { GoblinSpawner = null,/*new GoblinSpawner(Vector2.Zero)*/ };
 
             NetPeerConfiguration config = new NetPeerConfiguration(ApplicationIdentifier);
             config.MaximumConnections = 100;
             config.Port = Port;
+            //config.EnableUPnP = true;
             NetServer = new NetServer(config);
-
             NetServer.Start();
+
+            ///if (!NetServer.UPnP.ForwardPort(Port, ApplicationIdentifier))
+            {
+                //throw new Exception();
+            }
+
+            //var externalIp = NetServer.UPnP.GetExternalIP();
+
+            //Console.WriteLine(externalIp);
 
             ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
 
@@ -86,7 +96,7 @@ namespace Mmo2d
                                         NetOutgoingMessage om = NetServer.CreateMessage();
                                         var authoritativePacket = new AuthoritativePacket() { IdIssuance = remoteUniqueIdentifier, };
 
-                                        om.Write(authoritativePacket.ToString());
+                                        om.Write(authoritativePacket.ToJsonString());
                                         NetServer.SendMessage(om, im.SenderConnection, NetDeliveryMethod.ReliableOrdered, 0);
                                     }
                                 }
@@ -162,7 +172,7 @@ namespace Mmo2d
             {
                 NetOutgoingMessage om = NetServer.CreateMessage();
 
-                var serializedPacket = packet.ToString();
+                var serializedPacket = packet.ToJsonString();
                 om.Write(serializedPacket);
                 NetServer.SendMessage(om, all, NetDeliveryMethod.UnreliableSequenced, 0);
             }
