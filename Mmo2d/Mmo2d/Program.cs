@@ -9,6 +9,7 @@ using Mmo2d;
 using Mmo2d.AuthoritativePackets;
 using Mmo2d.ServerUpdatePackets;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Example
 {
@@ -16,6 +17,7 @@ namespace Example
     {
         static IServer Server { get; set; }
         public static long? IssuedId { get; private set; }
+        public static Stopwatch Stopwatch { get; set; }
 
         public static State State;
 
@@ -104,7 +106,15 @@ namespace Example
                 }
 
                 if (packet.State != null)
-                {
+                {                  
+                    var packetMe = packet.State.Entities.FirstOrDefault(e => e.Id == IssuedId);
+                    var localMe = State.Entities.FirstOrDefault(e => e.Id == IssuedId);
+                    if (packetMe != null && localMe != null && packetMe.Location != localMe.Location)
+                    {
+       
+                        var elasped = Stopwatch.Elapsed;
+
+                    }
                     State = packet.State;
                 }
             }
@@ -114,6 +124,7 @@ namespace Example
 
         private static void Game_KeyPress(object sender, KeyPressEventArgs e)
         {
+            Stopwatch = Stopwatch.StartNew();
             BroadcastKeystroke(e.KeyChar);
         }
 
