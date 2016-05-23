@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using OpenTK.Input;
 
 namespace Mmo2d.ServerUpdatePackets
 {
     public class ServerUpdatePacket
     {
-        public char? TypedCharacter { get; set; }
-
         public long? PlayerId { get; set; }
+        public KeyEventArgs KeyEventArgs { get; internal set; }
 
         public override string ToString()
         {

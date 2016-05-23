@@ -45,6 +45,16 @@ namespace Example
                     {
                         game.Exit();
                     }
+
+                    /*var keyboardState = Keyboard.GetState();
+
+                    PlayerInput.Update(keyboardState, )
+
+                    if (state[Key.Up])
+                        ; // move up
+                    if (state[Key.Down])
+                        ; // move down*/
+
                     ProcessServerData();
                 };
 
@@ -56,19 +66,30 @@ namespace Example
                     GL.MatrixMode(MatrixMode.Projection);
                     GL.LoadIdentity();
 
-                    var playerEntity = State.Entities.FirstOrDefault(en => en.Id == IssuedId);
-
-                    if (playerEntity != null)
+                    if (State != null)
                     {
-                        GL.Ortho(playerEntity.Location.X - 1.0, playerEntity.Location.X + 1.0, playerEntity.Location.Y - 1.0, playerEntity.Location.Y + 1.0, 0.0, 4.0);
-                    }
+                        var playerEntity = State.Entities.FirstOrDefault(en => en.Id == IssuedId);
 
-                    State.Render();
+                        if (playerEntity != null)
+                        {
+                            GL.Ortho(playerEntity.Location.X - 1.0, playerEntity.Location.X + 1.0, playerEntity.Location.Y - 1.0, playerEntity.Location.Y + 1.0, 0.0, 4.0);
+                        }
+
+                        State.Render();
+                    }
 
                     game.SwapBuffers();
                 };
 
-                game.KeyPress += Game_KeyPress;
+                game.KeyDown += (sender, e) =>
+                {
+                    Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, IsRepeat = e.IsRepeat, }, PlayerId = IssuedId, });
+                };
+
+                game.KeyUp += (sender, e) =>
+                {
+                    Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, IsRepeat = e.IsRepeat,}, PlayerId = IssuedId, });
+                };
 
                 // Run the game at 60 updates per second
                 game.Run(60.0);
@@ -107,14 +128,12 @@ namespace Example
                 {
                     State = packet.State;
                 }
+
+                if (packet != null)
+                {
+                    State = packet.State;
+                }
             }
-        }
-
-        private static bool h = false;
-
-        private static void Game_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            BroadcastKeystroke(e.KeyChar);
         }
 
         public static void DisplayLogin()
@@ -179,12 +198,6 @@ namespace Example
             }
 
             Server = new ClientServer(input);
-        }
-
-        private static void BroadcastKeystroke(char c)
-        {
-            //server object - sends messages to server
-            Server.SendMessage(new ServerUpdatePacket { TypedCharacter = c, PlayerId = IssuedId, });
         }
     }
 }

@@ -11,7 +11,10 @@ namespace Mmo2d
     public class State
     {
         public List<Entity> Entities { get; set; }
+
+        [JsonIgnore]
         public GoblinSpawner GoblinSpawner { get; set; }
+
         public TimeSpan ElapsedTime { get; set; }
 
         public int Updates { get; set; }

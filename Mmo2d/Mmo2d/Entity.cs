@@ -11,6 +11,7 @@ using OpenTK.Input;
 using System.Drawing;
 using Mmo2d.ServerUpdatePackets;
 using Newtonsoft.Json;
+using System.Linq.Expressions;
 
 namespace Mmo2d
 {
@@ -36,11 +37,16 @@ namespace Mmo2d
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100);
 
         public int Hits { get; set; } = 0;
-
+        
         public Entity EquippedSword { get; set; }
+        public const float Speed = 0.01f;
+
+        [JsonIgnore]
+        public List<Action> UnstagedChanges { get; set; }
 
         public Entity()
         {
+            UnstagedChanges = new List<Action>();
         }
 
         public Entity(Vector2 location) : this()
@@ -73,32 +79,48 @@ namespace Mmo2d
             GL.End();
         }
 
-        public void InputHandler(ServerUpdatePacket message)
+        public void InputHandler(KeyEventArgs keyEventArgs)
         {
-            if (message.TypedCharacter == 'w')
+            if (keyEventArgs.Key == Key.W)
             {
-                Location = Vector2.Add(Location, new Vector2(0.0f, 0.1f));
+                UnstagedChanges.Add(() => { MoveUpKeyDown = keyEventArgs.KeyDown; });
             }
-            else if (message.TypedCharacter == 's')
+            else if (keyEventArgs.Key == Key.S)
             {
-                Location = Vector2.Add(Location, new Vector2(0.0f, -0.1f));
+                UnstagedChanges.Add(() => { MoveDownKeyDown = keyEventArgs.KeyDown; });                
             }
-            else if (message.TypedCharacter == 'd')
+            else if (keyEventArgs.Key == Key.D)
             {
-                Location = Vector2.Add(Location, new Vector2(0.1f, 0.0f));
+                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown; });                
             }
-            else if (message.TypedCharacter == 'a')
+            else if (keyEventArgs.Key == Key.A)
             {
-                Location = Vector2.Add(Location, new Vector2(-0.1f, 0.0f));
+                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown; });                
             }
-            else if (message.TypedCharacter == ' ' && EquippedSword != null)
+            else if (keyEventArgs.Key == Key.Space)
             {
-                TimeSinceAttack = TimeSpan.Zero;
+                if (!keyEventArgs.IsRepeat)
+                {
+                    UnstagedChanges.Add(() => { AttackKeyDown = keyEventArgs.KeyDown; });
+                }
             }
         }
+        
+        [JsonIgnore]
+        public bool MoveUpKeyDown { get; set; }
+        [JsonIgnore]
+        public bool MoveDownKeyDown { get; set; }
+        [JsonIgnore]
+        public bool MoveLeftKeyDown { get; set; }
+        [JsonIgnore]
+        public bool MoveRightKeyDown { get; set; }
+        [JsonIgnore]
+        public bool AttackKeyDown { get; set; }
 
         public void Update(TimeSpan delta, List<Entity> entities)
         {
+            UnstagedChanges.ForEach(uc => uc.Invoke());
+
             if (TimeSinceAttack != null)
             {
                 if (TimeSinceAttack == TimeSpan.Zero)
@@ -130,6 +152,40 @@ namespace Mmo2d
             if (EquippedSword != null)
             {
                 EquippedSword.Location = Location;
+            }
+
+            if (AttackKeyDown && EquippedSword != null)
+            {
+                TimeSinceAttack = TimeSpan.Zero;
+            }
+
+            var displacementVector = Vector2.Zero;
+
+            if (MoveUpKeyDown)
+            {
+                displacementVector = Vector2.Add(displacementVector, Vector2.UnitY);
+            }
+
+            if (MoveDownKeyDown)
+            {
+                displacementVector = Vector2.Add(displacementVector, -Vector2.UnitY);
+            }
+
+            if (MoveRightKeyDown)
+            {
+                displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
+            }
+
+            if (MoveLeftKeyDown)
+            {
+                displacementVector = Vector2.Add(displacementVector, -Vector2.UnitX);
+            }
+
+            if (displacementVector != Vector2.Zero)
+            {
+                displacementVector = Speed * displacementVector.Normalized();
+
+                Location += displacementVector;
             }
         }
 

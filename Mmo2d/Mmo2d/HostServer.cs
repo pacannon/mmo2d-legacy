@@ -20,11 +20,13 @@ namespace Mmo2d
         public CancellationTokenSource ServerResponseListenerCancellationTokenSource { get; set; }
 
         public ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; set; }
+        public ConcurrentQueue<ServerUpdatePacket> UpdateQueue { get; set; }
 
         public const int Port = 11000;
         public const string ApplicationIdentifier = "mmo2d";
 
         public State State { get; set; }
+        public State StateClone { get; set; }
 
         public NetServer NetServer { get; set; }
         public Stopwatch Stopwatch { get; set; }
@@ -42,6 +44,7 @@ namespace Mmo2d
             NetServer.Start();
 
             ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
+            UpdateQueue = new ConcurrentQueue<ServerUpdatePacket>();
 
             ServerResponseListenerCancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = ServerResponseListenerCancellationTokenSource.Token;
@@ -118,7 +121,7 @@ namespace Mmo2d
             {
                 while (true)
                 {
-                    var packet = new AuthoritativePacket { State = State.Clone(), };
+                    var packet = new AuthoritativePacket { State = StateClone, };
                     SendToAllClients(packet);
 
                     Thread.Sleep(TimeSpan.FromMilliseconds(1000.0 / 30.0));
@@ -134,19 +137,58 @@ namespace Mmo2d
 
                 while (true)
                 {
-                    var elapsed = TimeSpan.FromMilliseconds(Stopwatch.ElapsedMilliseconds);
-                    var stateClone = State.Clone();
+                    while (UpdateQueue.Count > 0)
+                    {
+                        ServerUpdatePacket packet = null;
 
-                    stateClone.Update(elapsed - lastElapsed);
+                        bool dequeueSucceeded = false;
+
+                        do
+                        {
+                            try
+                            {
+                                dequeueSucceeded = UpdateQueue.TryDequeue(out packet);
+                            }
+
+                            catch (InvalidOperationException)
+                            {
+                                return;
+                            }
+                        }
+
+                        while (!dequeueSucceeded);
+
+                        if (packet != null)
+                        {
+                            var player = State.Entities.Where(e => e.Id == packet.PlayerId).FirstOrDefault();
+
+                            if (player != null)
+                            {
+                                player.InputHandler(packet.KeyEventArgs);
+                            }
+                        }
+                    }
+
+                    var elapsed = TimeSpan.FromMilliseconds(Stopwatch.ElapsedMilliseconds);
+
+                    State.Update(elapsed - lastElapsed);
                     lastElapsed = elapsed;
-                    State = stateClone;
+
+                    StateClone = State.Clone();
+
                     Thread.Sleep(TimeSpan.FromMilliseconds(1000.0 / 60.0));
                 }
             });
 
+            updateStateTask.ContinueWith(antecedent =>
+            {
+                if (antecedent.Exception != null)
+                {
+
+                }
+            });
+
             updateStateTask.Start();
-
-
 
             var randomInt = new Random().Next();
 
@@ -172,12 +214,7 @@ namespace Mmo2d
 
         public void SendMessage(ServerUpdatePacket message)
         {
-            if (message.TypedCharacter != null)
-            {
-                var player = State.Entities.Where(e => e.Id == message.PlayerId).FirstOrDefault();
-
-                player.InputHandler(message);
-            }
+            UpdateQueue.Enqueue(message);
         }
     }
 }
