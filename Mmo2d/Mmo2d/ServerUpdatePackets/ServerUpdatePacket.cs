@@ -11,7 +11,7 @@ namespace Mmo2d.ServerUpdatePackets
     public class ServerUpdatePacket
     {
         public long? PlayerId { get; set; }
-        public KeyEventArgs KeyEventArgs { get; internal set; }
+        public KeyEventArgs KeyEventArgs { get; set; }
 
         public override string ToString()
         {

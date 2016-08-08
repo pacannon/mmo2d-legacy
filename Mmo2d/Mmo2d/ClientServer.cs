@@ -42,7 +42,7 @@ namespace Mmo2d
                 NetIncomingMessage im;
 
                 try {
-                    while (NetClient.MessageReceivedEvent.WaitOne())
+                    while (NetClient.MessageReceivedEvent.WaitOne(TimeSpan.Zero))
                     {
                         im = NetClient.ReadMessage();
                         // handle incoming message
@@ -96,7 +96,8 @@ namespace Mmo2d
 
         public void SendMessage(ServerUpdatePacket message)
         {
-            NetOutgoingMessage netOutGoindMessage = NetClient.CreateMessage(message.ToString());
+            var serializedMessage = message.ToString();
+            NetOutgoingMessage netOutGoindMessage = NetClient.CreateMessage(serializedMessage);
             NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableOrdered);
             NetClient.FlushSendQueue();
         }

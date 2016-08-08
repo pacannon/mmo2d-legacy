@@ -162,7 +162,7 @@ namespace Mmo2d
                         {
                             var player = State.Entities.Where(e => e.Id == packet.PlayerId).FirstOrDefault();
 
-                            if (player != null)
+                            if (player != null && packet.KeyEventArgs != null)
                             {
                                 player.InputHandler(packet.KeyEventArgs);
                             }

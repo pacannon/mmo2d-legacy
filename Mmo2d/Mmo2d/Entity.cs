@@ -120,6 +120,7 @@ namespace Mmo2d
         public void Update(TimeSpan delta, List<Entity> entities)
         {
             UnstagedChanges.ForEach(uc => uc.Invoke());
+            UnstagedChanges.Clear();
 
             if (TimeSinceAttack != null)
             {
@@ -147,11 +148,6 @@ namespace Mmo2d
             if (TimeSinceDeath != null)
             {
                 TimeSinceDeath += delta;
-            }
-
-            if (EquippedSword != null)
-            {
-                EquippedSword.Location = Location;
             }
 
             if (AttackKeyDown && EquippedSword != null)
@@ -186,6 +182,11 @@ namespace Mmo2d
                 displacementVector = Speed * displacementVector.Normalized();
 
                 Location += displacementVector;
+            }
+
+            if (EquippedSword != null)
+            {
+                EquippedSword.Location = Location;
             }
         }
 
