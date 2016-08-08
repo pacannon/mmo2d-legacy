@@ -9,6 +9,10 @@ using Mmo2d;
 using Mmo2d.AuthoritativePackets;
 using Mmo2d.ServerUpdatePackets;
 using System.Linq;
+using System.Drawing.Imaging;
+using System.Reflection;
+using System.IO;
+using Mmo2d.Textures;
 
 namespace Example
 {
@@ -31,6 +35,11 @@ namespace Example
                 {
                     // setup settings, load textures, sounds
                     game.VSync = VSyncMode.On;
+
+                    GL.Enable(EnableCap.Texture2D);
+
+                    var tl = new TextureLoader();
+                    var id = tl.LoadTexture("Mmo2d.Resources.roguelikeChar_transparent.png");
                 };
 
                 game.Resize += (sender, e) =>

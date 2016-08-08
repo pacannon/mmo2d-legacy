@@ -24,6 +24,23 @@ namespace Mmo2d
         //object size
         public float width = 0.2f;
         public float height = 0.2f;
+        public float sprite_size = 17.0f;
+
+        public int Row
+        {
+            get
+            {
+                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : 0;
+            }
+        }
+
+        public int Column
+        {
+            get
+            {
+                return OverriddenColor == Color.Red ? 43 : 0;
+            }
+        }
 
         public long Id { get; set; }
 
@@ -61,22 +78,30 @@ namespace Mmo2d
                 EquippedSword.Render();
             }
 
+            GL.BindTexture(TextureTarget.Texture2D, 1);
+
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
             //renders a tringle according to the position of the top left vertex of triangle
             GL.Begin(PrimitiveType.Quads);
 
-            GL.Color3(OverriddenColor ?? Color.White);
-            GL.Vertex2(TopLeftCorner);
+            GL.Color3(System.Drawing.Color.Transparent);
+            //GL.Color3(OverriddenColor ?? Color.White);
+            GL.TexCoord2((sprite_size * Column) / 917.0f, (1.0f + sprite_size * Row) / 203.0f);  GL.Vertex2(TopLeftCorner);
 
-            GL.Color3(OverriddenColor ?? Color.Blue);
-            GL.Vertex2(BottomLeftCorner);
+            //GL.Color3(OverriddenColor ?? Color.Blue);
+            GL.TexCoord2((sprite_size * Column) / 917.0f, (17.0f + sprite_size * Row) / 203.0f); GL.Vertex2(BottomLeftCorner);
 
-            GL.Color3(OverriddenColor ?? Color.Gray);
-            GL.Vertex2(BottomRightCorner);
+            //GL.Color3(OverriddenColor ?? Color.Gray);
+            GL.TexCoord2((16.0f + sprite_size * Column) / 917.0f, (17.0f + sprite_size * Row) / 203.0f); GL.Vertex2(BottomRightCorner);
 
-            GL.Color3(OverriddenColor ?? Color.Orange);
-            GL.Vertex2(TopRightCorner);
+            //GL.Color3(OverriddenColor ?? Color.Orange);
+            GL.TexCoord2((16.0f + sprite_size * Column) / 917.0f, (1.0f + sprite_size * Row) / 203.0f); GL.Vertex2(TopRightCorner);
 
             GL.End();
+
+            GL.Disable(EnableCap.Blend);
         }
 
         public void InputHandler(KeyEventArgs keyEventArgs)
@@ -91,11 +116,11 @@ namespace Mmo2d
             }
             else if (keyEventArgs.Key == Key.D)
             {
-                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown; });                
+                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown; });
             }
             else if (keyEventArgs.Key == Key.A)
             {
-                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown; });                
+                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown; });
             }
             else if (keyEventArgs.Key == Key.Space)
             {
@@ -105,7 +130,7 @@ namespace Mmo2d
                 }
             }
         }
-        
+
         [JsonIgnore]
         public bool MoveUpKeyDown { get; set; }
         [JsonIgnore]
