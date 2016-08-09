@@ -1,14 +1,12 @@
 ﻿using Lidgren.Network;
 using Mmo2d.AuthoritativePackets;
 using Mmo2d.ServerUpdatePackets;
-using Newtonsoft.Json;
 using OpenTK;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

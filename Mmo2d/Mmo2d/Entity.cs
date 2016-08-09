@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using OpenTK;
-using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Drawing;
 using Mmo2d.ServerUpdatePackets;
 using Newtonsoft.Json;
-using System.Linq.Expressions;
 
 namespace Mmo2d
 {
     public class Entity
     {
-        public static readonly Entity Sword = new Entity { width = SwordLength * 2.0f, height = SwordLength * 2.0f, OverriddenColor = Color.Red };
+        public static Entity Sword { get { return new Entity { width = SwordLength * 2.0f, height = SwordLength * 2.0f, OverriddenColor = Color.Red }; } }
 
         public Vector2 Location { get; set; }
 
