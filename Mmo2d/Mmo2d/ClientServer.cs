@@ -98,7 +98,7 @@ namespace Mmo2d
         {
             var serializedMessage = message.ToString();
             NetOutgoingMessage netOutGoindMessage = NetClient.CreateMessage(serializedMessage);
-            NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableOrdered);
+            NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableSequenced);
             NetClient.FlushSendQueue();
         }
     }
