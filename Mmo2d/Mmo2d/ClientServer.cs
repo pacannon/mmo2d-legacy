@@ -42,7 +42,7 @@ namespace Mmo2d
                 NetIncomingMessage im;
 
                 try {
-                    while (NetClient.MessageReceivedEvent.WaitOne(TimeSpan.Zero))
+                    while (NetClient.MessageReceivedEvent.WaitOne())
                     {
                         im = NetClient.ReadMessage();
                         // handle incoming message
