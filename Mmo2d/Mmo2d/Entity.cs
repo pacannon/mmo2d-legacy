@@ -30,7 +30,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : 0;
+                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : ((int)Id) % 11;
             }
         }
 
