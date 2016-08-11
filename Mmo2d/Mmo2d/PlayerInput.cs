@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mmo2d
 {
@@ -13,6 +9,7 @@ namespace Mmo2d
         public ButtonState MoveLeft { get; set; }
         public ButtonState MoveRight { get; set; }
         public ButtonState Attack { get; set; }
+        public ButtonState Jump { get; set; }
 
         public void Update(TimeSpan delta)
         {

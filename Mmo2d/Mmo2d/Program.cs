@@ -100,6 +100,16 @@ namespace Example
                     Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, IsRepeat = e.IsRepeat,}, PlayerId = IssuedId, });
                 };
 
+                game.MouseDown += (sender, e) =>
+                {
+                    Server.SendMessage(new ServerUpdatePacket() { MousePressed = e.IsPressed, PlayerId = IssuedId, });
+                };
+
+                game.MouseUp += (sender, e) =>
+                {
+                    Server.SendMessage(new ServerUpdatePacket() { MousePressed = e.IsPressed, PlayerId = IssuedId, });
+                };
+
                 // Run the game at 60 updates per second
                 game.Run(60.0);
             }

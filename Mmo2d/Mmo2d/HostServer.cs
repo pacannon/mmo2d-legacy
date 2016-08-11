@@ -156,15 +156,9 @@ namespace Mmo2d
 
                         while (!dequeueSucceeded);
 
-                        if (packet != null)
-                        {
-                            var player = State.Entities.Where(e => e.Id == packet.PlayerId).FirstOrDefault();
+                        var player = State.Entities.Where(e => e.Id == packet.PlayerId).FirstOrDefault();
 
-                            if (player != null && packet.KeyEventArgs != null)
-                            {
-                                player.InputHandler(packet.KeyEventArgs);
-                            }
-                        }
+                        player?.InputHandler(packet);
                     }
 
                     var elapsed = TimeSpan.FromMilliseconds(Stopwatch.ElapsedMilliseconds);

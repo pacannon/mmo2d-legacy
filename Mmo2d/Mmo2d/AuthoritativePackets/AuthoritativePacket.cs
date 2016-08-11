@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-
-namespace Mmo2d.AuthoritativePackets
+﻿namespace Mmo2d.AuthoritativePackets
 {
     public class AuthoritativePacket
     {

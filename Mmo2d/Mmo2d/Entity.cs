@@ -12,12 +12,12 @@ namespace Mmo2d
 {
     public class Entity
     {
-        public static Entity Sword { get { return new Entity { width = SwordLength * 2.0f, height = SwordLength * 2.0f, OverriddenColor = Color.Red }; } }
+        public static Entity Sword { get { return new Entity { Width = SwordLength * 2.0f, height = SwordLength * 2.0f, OverriddenColor = Color.Red }; } }
 
         public Vector2 Location { get; set; }
 
         //object size
-        public float width = 0.2f;
+        private float width = 0.2f;
         public float height = 0.2f;
         public float sprite_size = 17.0f;
 
@@ -43,10 +43,12 @@ namespace Mmo2d
 
         public TimeSpan? TimeSinceAttack { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
+        public TimeSpan? TimeSinceJump { get; set; }
 
         public const float SwordLength = 0.4f;
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100);
+        public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(1000);
 
         public int Hits { get; set; } = 0;
         
@@ -99,29 +101,39 @@ namespace Mmo2d
             GL.Disable(EnableCap.Blend);
         }
 
-        public void InputHandler(KeyEventArgs keyEventArgs)
+        public void InputHandler(ServerUpdatePacket serverUpdatePacket)
         {
-            if (keyEventArgs.Key == Key.W)
+            HandleKeyEventArgs(serverUpdatePacket?.KeyEventArgs);
+
+            if (serverUpdatePacket?.MousePressed != null)
             {
-                UnstagedChanges.Add(() => { MoveUpKeyDown = keyEventArgs.KeyDown; });
+                UnstagedChanges.Add(() => { AttackKeyDown = serverUpdatePacket.MousePressed.Value; });
             }
-            else if (keyEventArgs.Key == Key.S)
+        }
+
+        private void HandleKeyEventArgs(KeyEventArgs keyEventArgs)
+        {
+            if (keyEventArgs?.Key == Key.W)
             {
-                UnstagedChanges.Add(() => { MoveDownKeyDown = keyEventArgs.KeyDown; });                
+                UnstagedChanges.Add(() => { MoveUpKeyDown = keyEventArgs.KeyDown.Value; });
             }
-            else if (keyEventArgs.Key == Key.D)
+            else if (keyEventArgs?.Key == Key.S)
             {
-                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown; });
+                UnstagedChanges.Add(() => { MoveDownKeyDown = keyEventArgs.KeyDown.Value; });
             }
-            else if (keyEventArgs.Key == Key.A)
+            else if (keyEventArgs?.Key == Key.D)
             {
-                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown; });
+                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown.Value; });
             }
-            else if (keyEventArgs.Key == Key.Space)
+            else if (keyEventArgs?.Key == Key.A)
             {
-                if (!keyEventArgs.IsRepeat)
+                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown.Value; });
+            }
+            else if (keyEventArgs?.Key != null && keyEventArgs.Key.Value == Key.Space)
+            {
+                if (keyEventArgs.IsRepeat != null && keyEventArgs.IsRepeat == false)
                 {
-                    UnstagedChanges.Add(() => { AttackKeyDown = keyEventArgs.KeyDown; });
+                    UnstagedChanges.Add(() => { AttackKeyDown = keyEventArgs.KeyDown.Value; });
                 }
             }
         }
@@ -227,9 +239,9 @@ namespace Mmo2d
         }
 
         [JsonIgnore]
-        public float LeftEdge { get { return Location.X - width / 2.0f; } }
+        public float LeftEdge { get { return Location.X - Width / 2.0f; } }
         [JsonIgnore]
-        public float RightEdge { get { return Location.X + width / 2.0f; } }
+        public float RightEdge { get { return Location.X + Width / 2.0f; } }
         [JsonIgnore]
         public float TopEdge { get { return Location.Y + height / 2.0f; } }
         [JsonIgnore]
@@ -242,5 +254,18 @@ namespace Mmo2d
         public Vector2 BottomRightCorner { get { return new Vector2(RightEdge, BottomEdge); } }
         [JsonIgnore]
         public Vector2 TopRightCorner { get { return new Vector2(RightEdge, TopEdge); } }
+
+        public float Width
+        {
+            get
+            {
+                return width;
+            }
+
+            set
+            {
+                width = value;
+            }
+        }
     }
 }

@@ -69,6 +69,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HostServer.cs" />
     <Compile Include="ServerUpdatePackets\KeyEventArgs.cs" />
+    <Compile Include="ServerUpdatePackets\MouseEventArgs.cs" />
     <Compile Include="ServerUpdatePackets\ServerUpdatePacket.cs" />
     <Compile Include="AuthoritativePackets\AuthoritativePacket.cs" />
     <Compile Include="ShouldSerializeContractResolver.cs" />
