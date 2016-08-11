@@ -41,6 +41,13 @@ namespace Mmo2d
 
         public Color? OverriddenColor { get; set; }
 
+        public float Height { get
+            {
+                return TimeSinceJump == null ? 0.0f :
+                    JumpVelocity * (float)TimeSinceJump.Value.TotalSeconds + 0.5f * -9.81f * (float)TimeSinceJump.Value.TotalSeconds * (float)TimeSinceJump.Value.TotalSeconds;
+            }
+        }
+
         public TimeSpan? TimeSinceAttack { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
@@ -49,6 +56,7 @@ namespace Mmo2d
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(1000);
+        public float JumpVelocity {  get { return ((float)JumpAnimationDuration.TotalSeconds * -9.81f)/2.0f; } }
 
         public int Hits { get; set; } = 0;
         
@@ -70,7 +78,7 @@ namespace Mmo2d
 
         public void Render()
         {
-            if (EquippedSword != null && TimeSinceAttack != null && TimeSinceAttack.Value < SwingSwordAnimationDuration)
+            if (EquippedSword != null && TimeSinceAttack != null)
             {
                 EquippedSword.Render();
             }
@@ -115,25 +123,25 @@ namespace Mmo2d
         {
             if (keyEventArgs?.Key == Key.W)
             {
-                UnstagedChanges.Add(() => { MoveUpKeyDown = keyEventArgs.KeyDown.Value; });
+                UnstagedChanges.Add(() => { MoveUpKeyDown = keyEventArgs.KeyDown; });
             }
             else if (keyEventArgs?.Key == Key.S)
             {
-                UnstagedChanges.Add(() => { MoveDownKeyDown = keyEventArgs.KeyDown.Value; });
+                UnstagedChanges.Add(() => { MoveDownKeyDown = keyEventArgs.KeyDown; });
             }
             else if (keyEventArgs?.Key == Key.D)
             {
-                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown.Value; });
+                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown; });
             }
             else if (keyEventArgs?.Key == Key.A)
             {
-                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown.Value; });
+                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown; });
             }
-            else if (keyEventArgs?.Key != null && keyEventArgs.Key.Value == Key.Space)
+            else if (keyEventArgs?.Key != null && keyEventArgs.Key == Key.Space)
             {
-                if (keyEventArgs.IsRepeat != null && keyEventArgs.IsRepeat == false)
+                if (keyEventArgs.IsRepeat == false && TimeSinceJump == null)
                 {
-                    UnstagedChanges.Add(() => { AttackKeyDown = keyEventArgs.KeyDown.Value; });
+                    UnstagedChanges.Add(() => { TimeSinceJump = (keyEventArgs.KeyDown ? TimeSpan.Zero : (TimeSpan?)null); });
                 }
             }
         }
@@ -171,9 +179,19 @@ namespace Mmo2d
 
                 TimeSinceAttack += delta;
 
-                if (TimeSinceAttack > TimeSpan.FromMilliseconds(1000))
+                if (TimeSinceAttack > SwingSwordAnimationDuration)
                 {
                     TimeSinceAttack = null;
+                }
+            }
+
+            if (TimeSinceJump != null)
+            {
+                TimeSinceJump += delta;
+
+                if (TimeSinceJump > JumpAnimationDuration)
+                {
+                    TimeSinceJump = null;
                 }
             }
 
@@ -243,9 +261,9 @@ namespace Mmo2d
         [JsonIgnore]
         public float RightEdge { get { return Location.X + Width / 2.0f; } }
         [JsonIgnore]
-        public float TopEdge { get { return Location.Y + height / 2.0f; } }
+        public float TopEdge { get { return (Location.Y + height / 2.0f) + Height; } }
         [JsonIgnore]
-        public float BottomEdge { get { return Location.Y - height / 2.0f; } }
+        public float BottomEdge { get { return (Location.Y - height / 2.0f) + Height; } }
         [JsonIgnore]
         public Vector2 TopLeftCorner { get { return new Vector2(LeftEdge, TopEdge); } }
         [JsonIgnore]
