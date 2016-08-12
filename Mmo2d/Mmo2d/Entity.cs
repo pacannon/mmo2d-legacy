@@ -33,7 +33,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == Color.Red ? 43 : 0;
+                return OverriddenColor == Color.Red ? 43 : 1;
             }
         }
 
@@ -43,8 +43,17 @@ namespace Mmo2d
 
         public float Height { get
             {
-                return TimeSinceJump == null ? 0.0f :
-                    JumpVelocity * (float)TimeSinceJump.Value.TotalSeconds + 0.5f * -9.81f * (float)TimeSinceJump.Value.TotalSeconds * (float)TimeSinceJump.Value.TotalSeconds;
+                if (TimeSinceJump == null)
+                {
+                    return 0.0f;
+                }
+
+                var time = (float)TimeSinceJump.Value.TotalSeconds;
+                var t2 = time * time;
+
+                var distanceTravelled = time * JumpVelocity;
+
+                return distanceTravelled + HalfAcceration * t2;
             }
         }
 
@@ -54,9 +63,10 @@ namespace Mmo2d
 
         public const float SwordLength = 0.4f;
         public static readonly Color GoblinColor = Color.Green;
-        public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100);
-        public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(1000);
-        public float JumpVelocity {  get { return ((float)JumpAnimationDuration.TotalSeconds * -9.81f)/2.0f; } }
+        public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100.0);
+        public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
+        public float JumpVelocity { get { return (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration; } }
+        public const float HalfAcceration = -2.81f / 2.0f;
 
         public int Hits { get; set; } = 0;
         
@@ -209,12 +219,12 @@ namespace Mmo2d
 
             if (MoveUpKeyDown)
             {
-                displacementVector = Vector2.Add(displacementVector, Vector2.UnitY);
+                displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(Vector2.UnitY, 0.644f));
             }
 
             if (MoveDownKeyDown)
             {
-                displacementVector = Vector2.Add(displacementVector, -Vector2.UnitY);
+                displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(-Vector2.UnitY, 0.644f));
             }
 
             if (MoveRightKeyDown)
