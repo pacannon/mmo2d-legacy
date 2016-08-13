@@ -1,22 +1,13 @@
 ﻿using OpenTK.Graphics.OpenGL;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mmo2d.Textures
 {
     public class TextureLoader
     {
-        public int LoadTexture(string textureFileName)
+        public int LoadTexture(Bitmap bitmap)
         {
-            var bitmap = BitmapForTexture(textureFileName);
-
             int id = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, id);
 
@@ -34,19 +25,6 @@ namespace Mmo2d.Textures
             bitmap.UnlockBits(bmp_data);
 
             return id;
-        }
-
-        private Bitmap BitmapForTexture(string textureFileName)
-        {
-            System.Reflection.Assembly thisExe;
-            thisExe = System.Reflection.Assembly.GetExecutingAssembly();
-
-            Stream stream = thisExe.GetManifestResourceStream(textureFileName);
-
-            Bitmap bitmap = new Bitmap(stream);
-            stream.Close();
-
-            return bitmap;
         }
     }
 }

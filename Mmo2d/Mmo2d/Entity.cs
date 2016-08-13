@@ -12,13 +12,13 @@ namespace Mmo2d
 {
     public class Entity
     {
-        public static Entity Sword { get { return new Entity { Width = SwordLength * 2.0f, height = SwordLength * 2.0f, OverriddenColor = Color.Red }; } }
+        public static Entity Sword { get { return new Entity { OverriddenColor = Color.Red }; } }
 
         public Vector2 Location { get; set; }
 
         //object size
-        private float width = 0.2f;
-        public float height = 0.2f;
+        public const float width = 0.2f;
+        public const float height = 0.2f;
         public float sprite_size = 17.0f;
 
         public int Row
@@ -68,7 +68,8 @@ namespace Mmo2d
         public float JumpVelocity { get { return (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration; } }
         public const float HalfAcceration = -2.81f / 2.0f;
 
-        public int Hits { get; set; } = 0;
+        public int Hits { get; set; }
+        public int Kills { get; set; }
         
         public Entity EquippedSword { get; set; }
         public const float Speed = 0.01f;
@@ -88,12 +89,7 @@ namespace Mmo2d
 
         public void Render()
         {
-            if (EquippedSword != null && TimeSinceAttack != null)
-            {
-                EquippedSword.Render();
-            }
-
-            GL.BindTexture(TextureTarget.Texture2D, 1);
+            GL.BindTexture(TextureTarget.Texture2D, 2);
 
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
@@ -101,22 +97,24 @@ namespace Mmo2d
             //renders a tringle according to the position of the top left vertex of triangle
             GL.Begin(PrimitiveType.Quads);
 
-            GL.Color3(System.Drawing.Color.Transparent);
-            //GL.Color3(OverriddenColor ?? Color.White);
+            GL.Color3(Color.Transparent);
+
             GL.TexCoord2((sprite_size * Column) / 917.0f, (1.0f + sprite_size * Row) / 203.0f);  GL.Vertex2(TopLeftCorner);
 
-            //GL.Color3(OverriddenColor ?? Color.Blue);
             GL.TexCoord2((sprite_size * Column) / 917.0f, (17.0f + sprite_size * Row) / 203.0f); GL.Vertex2(BottomLeftCorner);
 
-            //GL.Color3(OverriddenColor ?? Color.Gray);
             GL.TexCoord2((16.0f + sprite_size * Column) / 917.0f, (17.0f + sprite_size * Row) / 203.0f); GL.Vertex2(BottomRightCorner);
 
-            //GL.Color3(OverriddenColor ?? Color.Orange);
             GL.TexCoord2((16.0f + sprite_size * Column) / 917.0f, (1.0f + sprite_size * Row) / 203.0f); GL.Vertex2(TopRightCorner);
 
             GL.End();
 
             GL.Disable(EnableCap.Blend);
+
+            if (EquippedSword != null && TimeSinceAttack != null)
+            {
+                EquippedSword.Render();
+            }
         }
 
         public void InputHandler(ServerUpdatePacket serverUpdatePacket)
@@ -167,10 +165,18 @@ namespace Mmo2d
         [JsonIgnore]
         public bool AttackKeyDown { get; set; }
 
-        public void Update(TimeSpan delta, List<Entity> entities)
+        public void Update(TimeSpan delta, IEnumerable<Entity> entities)
         {
             UnstagedChanges.ForEach(uc => uc.Invoke());
             UnstagedChanges.Clear();
+
+            if (OverriddenColor == Color.Green)
+            {                
+                var displacementVector = Vector2.Add(Vector2.UnitX, Vector2.Multiply(Vector2.UnitY, 0.644f));
+                
+                displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
+                return;
+            }
 
             if (TimeSinceAttack != null)
             {
@@ -183,6 +189,7 @@ namespace Mmo2d
                         if (attackedEntity.Hits >= 4)
                         {
                             attackedEntity.TimeSinceDeath = TimeSpan.Zero;
+                            Kills++;
                         }
                     }
                 }
@@ -215,6 +222,11 @@ namespace Mmo2d
                 TimeSinceAttack = TimeSpan.Zero;
             }
 
+            IncrementPosition();
+        }
+
+        public void IncrementPosition()
+        {
             var displacementVector = Vector2.Zero;
 
             if (MoveUpKeyDown)
@@ -288,11 +300,6 @@ namespace Mmo2d
             get
             {
                 return width;
-            }
-
-            set
-            {
-                width = value;
             }
         }
     }

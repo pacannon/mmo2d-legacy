@@ -1,10 +1,7 @@
 ﻿using Newtonsoft.Json;
-using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mmo2d
 {
@@ -44,7 +41,7 @@ namespace Mmo2d
                 entity.Update(delta, Entities);
             }
 
-            Entities.RemoveAll(new Predicate<Entity>((e) => e.TimeSinceDeath != null));
+            Entities.RemoveAll(e => e.TimeSinceDeath != null);
 
             GoblinSpawner.Update(delta, Entities);
         }

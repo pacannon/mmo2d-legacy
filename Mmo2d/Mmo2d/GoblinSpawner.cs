@@ -3,9 +3,6 @@ using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mmo2d
 {
@@ -13,7 +10,7 @@ namespace Mmo2d
     {
         public const int MaxGoblins = 4;
         public const float SpawningRadius = 1.0f;
-        public static readonly TimeSpan SpawningInterval = TimeSpan.FromSeconds(1.0);
+        public static readonly TimeSpan SpawningInterval = TimeSpan.FromMilliseconds(643.0);
 
         public List<Entity> SpawnedGoblins { get; set; }
 
@@ -53,7 +50,7 @@ namespace Mmo2d
                 var randomRadius = Random.NextDouble() * SpawningRadius;
 
                 // This is not uniform randomness. See http://mathworld.wolfram.com/DiskPointPicking.html for more info.
-                var randomCoords = Complex.FromPolarCoordinates(randomRadius, randomAngle);
+                var randomCoords = System.Numerics.Complex.FromPolarCoordinates(randomRadius, randomAngle);
 
                 var randomPostion = new Vector2((float)randomCoords.Real + X, (float)randomCoords.Imaginary + Y);
 

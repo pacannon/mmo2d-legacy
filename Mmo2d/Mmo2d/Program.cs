@@ -31,6 +31,13 @@ namespace Example
                 
             using (var game = new GameWindow())
             {
+                // Create Bitmap and OpenGL texture
+                Bitmap text_bmp = new Bitmap(game.Width, game.Height); // match window size
+
+                int text_texture = GL.GenTexture();
+
+//Ui ui = new Ui(text_bmp, text_texture);
+
                 game.Load += (sender, e) =>
                 {
                     // setup settings, load textures, sounds
@@ -39,12 +46,27 @@ namespace Example
                     GL.Enable(EnableCap.Texture2D);
 
                     var tl = new TextureLoader();
-                    var id = tl.LoadTexture("Mmo2d.Resources.roguelikeChar_transparent.png");
+                    var id = tl.LoadTexture(Mmo2d.Properties.Resources.roguelikeChar_transparent);
+                    
+                    GL.BindTexture(TextureTarget.Texture2D, text_texture);
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)All.Linear);
+                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, text_bmp.Width, text_bmp.Height, 0,
+                        OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero); // just allocate memory, so we can update efficiently using TexSubImage2D
+
                 };
 
                 game.Resize += (sender, e) =>
                 {
                     GL.Viewport(0, 0, game.Width, game.Height);
+
+                    // Ensure Bitmap and texture match window size
+                    text_bmp.Dispose();
+                    text_bmp = new Bitmap(game.Width, game.Height);
+
+                    GL.BindTexture(TextureTarget.Texture2D, text_texture);
+                    GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, text_bmp.Width, text_bmp.Height,
+                        OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero);
                 };
 
                 game.UpdateFrame += (sender, e) =>
@@ -75,9 +97,13 @@ namespace Example
                     GL.MatrixMode(MatrixMode.Projection);
                     GL.LoadIdentity();
 
+                    Entity playerEntity = null;
+
+                    new Ui(text_bmp, text_texture).Render(playerEntity);
+
                     if (State != null)
                     {
-                        var playerEntity = State.Entities.FirstOrDefault(en => en.Id == IssuedId);
+                        playerEntity = State.Entities.FirstOrDefault(en => en.Id == IssuedId);
 
                         if (playerEntity != null)
                         {
