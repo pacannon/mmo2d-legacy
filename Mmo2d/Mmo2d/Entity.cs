@@ -89,7 +89,7 @@ namespace Mmo2d
 
         public void Render()
         {
-            GL.BindTexture(TextureTarget.Texture2D, 2);
+            GL.BindTexture(TextureTarget.Texture2D, 1);
 
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
