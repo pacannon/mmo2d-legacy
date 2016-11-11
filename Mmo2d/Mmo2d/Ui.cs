@@ -18,8 +18,6 @@ namespace Mmo2d
 
         public static int CharXSpacing = 11;
 
-        public static string Text = "GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);";
-
         // Used to offset rendering glyphs to bitmap
         public static int AtlasOffsetX = -3, AtlassOffsetY = -1;
         public static int FontSize = 14;
@@ -47,7 +45,7 @@ namespace Mmo2d
                 return;
             }
 
-            DrawText(10, 10, Settings.Text, width, height);
+            DrawText(10, 10, playerEntity.Kills.ToString(), width, height);
         }
 
         public void DrawText(int x, int y, string text, int gameWidth, int gameHeight)
