@@ -16,6 +16,8 @@ namespace Mmo2d
 
         public Vector2 Location { get; set; }
 
+        public static int CharacterTextureId { get; set; }
+
         //object size
         public const float width = 0.2f;
         public const float height = 0.2f;
@@ -89,7 +91,7 @@ namespace Mmo2d
 
         public void Render()
         {
-            GL.BindTexture(TextureTarget.Texture2D, 1);
+            GL.BindTexture(TextureTarget.Texture2D, CharacterTextureId);
 
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);

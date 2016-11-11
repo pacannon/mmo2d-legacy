@@ -22,6 +22,10 @@ namespace Example
         public static long? IssuedId { get; private set; }
 
         public static State State;
+        public static Ui Ui;
+        public static TextureLoader TextureLoader;
+
+        static int FontTextureID;
 
         [STAThread]
         public static void Main()
@@ -36,13 +40,20 @@ namespace Example
                     // setup settings, load textures, sounds
                     game.VSync = VSyncMode.On;
 
-                    GL.Enable(EnableCap.Texture2D);
+                    TextureLoader = new TextureLoader();
+                    Entity.CharacterTextureId = TextureLoader.LoadTexture(Mmo2d.Properties.Resources.roguelikeChar_transparent);
 
-                    var tl = new TextureLoader();
-                    var id = tl.LoadTexture(Mmo2d.Properties.Resources.roguelikeChar_transparent);
-                    
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)All.Linear);
+
+                    Ui = new Ui();
+
+                    FontTextureID = LoadTexture(Settings.FontBitmapFilename);
+                    GL.Enable(EnableCap.Texture2D);
+                    GL.ClearColor(Color.ForestGreen);
+                    GL.MatrixMode(MatrixMode.Projection);
+                    GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+                    /*GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)All.Linear);*/
                 };
 
                 game.Resize += (sender, e) =>
@@ -80,19 +91,19 @@ namespace Example
 
                     Entity playerEntity = null;
 
-                    new Ui().Render(playerEntity);
-
                     if (State != null)
                     {
                         playerEntity = State.Entities.FirstOrDefault(en => en.Id == IssuedId);
 
-                        if (playerEntity != null)
+                        /*if (playerEntity != null)
                         {
                             GL.Ortho(playerEntity.Location.X - 1.0, playerEntity.Location.X + 1.0, playerEntity.Location.Y - 1.0, playerEntity.Location.Y + 1.0, 0.0, 4.0);
                         }
 
-                        State.Render();
+                        State.Render();*/
                     }
+
+                    Ui.Render(playerEntity, game.Width, game.Height);
 
                     game.SwapBuffers();
                 };
@@ -119,6 +130,22 @@ namespace Example
 
                 // Run the game at 60 updates per second
                 game.Run(60.0);
+            }
+        }
+
+        static int LoadTexture(string filename)
+        {
+            using (var bitmap = new Bitmap(filename))
+            {
+                var texId = GL.GenTexture();
+                GL.BindTexture(TextureTarget.Texture2D, texId);
+                BitmapData data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmap.Width, bitmap.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                bitmap.UnlockBits(data);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                Ui.TextureWidth = bitmap.Width; Ui.TextureHeight = bitmap.Height;
+                return texId;
             }
         }
 
