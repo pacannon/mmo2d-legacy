@@ -3,8 +3,8 @@ using OpenTK.Graphics.OpenGL;
 using System;
 using System.Drawing.Text;
 using System.Drawing.Drawing2D;
-using System.Diagnostics;
 using System.IO;
+using Mmo2d.Textures;
 
 namespace Mmo2d
 {
@@ -33,10 +33,11 @@ namespace Mmo2d
     {
         public int TextureWidth { get; set; }
         public int TextureHeight { get; set; }
+        public int FontTextureId { get; set; }
 
-        public Ui()
+        public Ui(TextureLoader textureLoader)
         {
-            GenerateFontImage();
+            GenerateFontImage(textureLoader);
         }
 
         public void Render(Entity playerEntity, int width, int height)
@@ -55,10 +56,12 @@ namespace Mmo2d
             GL.LoadIdentity();
             GL.Ortho(0, gameWidth, gameHeight, 0, 0, 1);
 
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
 
             float u_step = (float)Settings.GlyphWidth / (float)TextureWidth;
             float v_step = (float)Settings.GlyphHeight / (float)TextureHeight;
+
+            GL.BindTexture(TextureTarget.Texture2D, FontTextureId);
 
             for (int n = 0; n < text.Length; n++)
             {
@@ -82,7 +85,7 @@ namespace Mmo2d
             GL.Disable(EnableCap.Blend);
         }
 
-        static void GenerateFontImage()
+        private void GenerateFontImage(TextureLoader textureLoader)
         {
             int bitmapWidth = Settings.GlyphsPerLine * Settings.GlyphWidth;
             int bitmapHeight = Settings.GlyphLineCount * Settings.GlyphHeight;
@@ -126,9 +129,11 @@ namespace Mmo2d
                         }
                     }
                 }
-                bitmap.Save(Settings.FontBitmapFilename);
+
+                FontTextureId = textureLoader.LoadTexture(bitmap);
+
+                TextureWidth = bitmap.Width; TextureHeight = bitmap.Height;
             }
-            Process.Start(Settings.FontBitmapFilename);
         }
     }
 }
