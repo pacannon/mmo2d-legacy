@@ -16,13 +16,16 @@ namespace Mmo2d.Textures
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
                 OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
 
-            bitmap.UnlockBits(bmp_data);
 
             // We will not upload mipmaps, so disable mipmapping (otherwise the texture will not appear).
             // We can use GL.GenerateMipmaps() or GL.Ext.GenerateMipmaps() to create
             // mipmaps automatically. In that case, use TextureMinFilter.LinearMipmapLinear to enable them.
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+
+            bitmap.UnlockBits(bmp_data);
+
+            GL.BindTexture(TextureTarget.Texture2D, 0);
 
             return id;
         }

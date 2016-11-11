@@ -95,8 +95,7 @@ namespace Mmo2d
 
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-
-            //renders a tringle according to the position of the top left vertex of triangle
+            
             GL.Begin(PrimitiveType.Quads);
 
             GL.Color3(Color.Transparent);

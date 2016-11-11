@@ -52,6 +52,8 @@ namespace Mmo2d
 
         public void DrawText(int x, int y, string text, int gameWidth, int gameHeight)
         {
+            GL.BindTexture(TextureTarget.Texture2D, FontTextureId);
+
             GL.Enable(EnableCap.Blend);
             GL.LoadIdentity();
             GL.Ortho(0, gameWidth, gameHeight, 0, 0, 1);
@@ -60,8 +62,6 @@ namespace Mmo2d
 
             float u_step = (float)Settings.GlyphWidth / (float)TextureWidth;
             float v_step = (float)Settings.GlyphHeight / (float)TextureHeight;
-
-            GL.BindTexture(TextureTarget.Texture2D, FontTextureId);
 
             for (int n = 0; n < text.Length; n++)
             {

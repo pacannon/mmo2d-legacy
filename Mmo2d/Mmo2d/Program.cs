@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using OpenTK;
-using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Net;
@@ -9,9 +8,6 @@ using Mmo2d;
 using Mmo2d.AuthoritativePackets;
 using Mmo2d.ServerUpdatePackets;
 using System.Linq;
-using System.Drawing.Imaging;
-using System.Reflection;
-using System.IO;
 using Mmo2d.Textures;
 
 namespace Example
@@ -40,11 +36,9 @@ namespace Example
 
                     TextureLoader = new TextureLoader();
 
-
-                    Ui = new Ui(TextureLoader);
                     Entity.CharacterTextureId = TextureLoader.LoadTexture(Mmo2d.Properties.Resources.roguelikeChar_transparent);
 
-                    //Ui.FontTextureId = LoadTexture(Settings.FontBitmapFilename);
+                    Ui = new Ui(TextureLoader);
                     GL.Enable(EnableCap.Texture2D);
                     GL.ClearColor(Color.ForestGreen);
                     GL.MatrixMode(MatrixMode.Projection);
