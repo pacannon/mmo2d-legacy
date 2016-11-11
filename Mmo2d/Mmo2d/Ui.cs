@@ -10,7 +10,6 @@ namespace Mmo2d
 {
     public static class Settings
     {
-        public static string FontBitmapFilename = "test.png";
         public static int GlyphsPerLine = 16;
         public static int GlyphLineCount = 16;
         public static int GlyphWidth = 11;
@@ -22,9 +21,9 @@ namespace Mmo2d
         public static int AtlasOffsetX = -3, AtlassOffsetY = -1;
         public static int FontSize = 14;
         public static bool BitmapFont = false;
-        public static string FromFile = @"D:\Users\Phillip\Documents\Kenney Game Assets (version 40)\Fonts\KenPixel Nova.ttf";
+        public static string FromFile;// = @"D:\Users\Phillip\Documents\Kenney Game Assets (version 40)\Fonts\KenPixel Mini Square.ttf";
+    
         public static string FontName = "Consolas";
-
     }
 
     public class Ui
