@@ -12,8 +12,6 @@ namespace Mmo2d
 {
     public class Entity
     {
-        public static Entity Sword { get { return new Entity { OverriddenColor = Color.Red }; } }
-
         public Vector2 Location { get; set; }
 
         public static int CharacterTextureId { get; set; }
@@ -27,7 +25,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : ((int)Id) % 11;
+                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : ((int)Id) % 6 + 5;
             }
         }
 
@@ -35,7 +33,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == Color.Red ? 43 : 1;
+                return OverriddenColor == Color.Red ? 43 : 0;
             }
         }
 
@@ -73,7 +71,7 @@ namespace Mmo2d
         public int Hits { get; set; }
         public int Kills { get; set; }
         
-        public Entity EquippedSword { get; set; }
+        public bool SwordEquipped { get; set; }
         public const float Speed = 0.01f;
 
         [JsonIgnore]
@@ -93,29 +91,34 @@ namespace Mmo2d
         {
             GL.BindTexture(TextureTarget.Texture2D, CharacterTextureId);
 
+            RenderSprite(Row, Column);
+
+            if (SwordEquipped && TimeSinceAttack != null)
+            {
+                RenderSprite(6, 43);
+            }
+        }
+
+        private void RenderSprite(int row, int column)
+        {
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-            
+
             GL.Begin(PrimitiveType.Quads);
 
             GL.Color3(Color.Transparent);
 
-            GL.TexCoord2((sprite_size * Column) / 917.0f, (1.0f + sprite_size * Row) / 203.0f);  GL.Vertex2(TopLeftCorner);
+            GL.TexCoord2((sprite_size * column) / 917.0f, (1.0f + sprite_size * row) / 203.0f); GL.Vertex2(TopLeftCorner);
 
-            GL.TexCoord2((sprite_size * Column) / 917.0f, (17.0f + sprite_size * Row) / 203.0f); GL.Vertex2(BottomLeftCorner);
+            GL.TexCoord2((sprite_size * column) / 917.0f, (17.0f + sprite_size * row) / 203.0f); GL.Vertex2(BottomLeftCorner);
 
-            GL.TexCoord2((16.0f + sprite_size * Column) / 917.0f, (17.0f + sprite_size * Row) / 203.0f); GL.Vertex2(BottomRightCorner);
+            GL.TexCoord2((16.0f + sprite_size * column) / 917.0f, (17.0f + sprite_size * row) / 203.0f); GL.Vertex2(BottomRightCorner);
 
-            GL.TexCoord2((16.0f + sprite_size * Column) / 917.0f, (1.0f + sprite_size * Row) / 203.0f); GL.Vertex2(TopRightCorner);
+            GL.TexCoord2((16.0f + sprite_size * column) / 917.0f, (1.0f + sprite_size * row) / 203.0f); GL.Vertex2(TopRightCorner);
 
             GL.End();
 
             GL.Disable(EnableCap.Blend);
-
-            if (EquippedSword != null && TimeSinceAttack != null)
-            {
-                EquippedSword.Render();
-            }
         }
 
         public void InputHandler(ServerUpdatePacket serverUpdatePacket)
@@ -171,14 +174,6 @@ namespace Mmo2d
             UnstagedChanges.ForEach(uc => uc.Invoke());
             UnstagedChanges.Clear();
 
-            if (OverriddenColor == Color.Green)
-            {                
-                var displacementVector = Vector2.Add(Vector2.UnitX, Vector2.Multiply(Vector2.UnitY, 0.644f));
-                
-                displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
-                return;
-            }
-
             if (TimeSinceAttack != null)
             {
                 if (TimeSinceAttack == TimeSpan.Zero)
@@ -187,7 +182,7 @@ namespace Mmo2d
                     {
                         attackedEntity.Hits++;
 
-                        if (attackedEntity.Hits >= 4)
+                        if (attackedEntity.Hits >= 1)
                         {
                             attackedEntity.TimeSinceDeath = TimeSpan.Zero;
                             Kills++;
@@ -218,7 +213,7 @@ namespace Mmo2d
                 TimeSinceDeath += delta;
             }
 
-            if (AttackKeyDown && EquippedSword != null)
+            if (AttackKeyDown && SwordEquipped)
             {
                 TimeSinceAttack = TimeSpan.Zero;
             }
@@ -256,16 +251,11 @@ namespace Mmo2d
 
                 Location += displacementVector;
             }
-
-            if (EquippedSword != null)
-            {
-                EquippedSword.Location = Location;
-            }
         }
 
         public bool Attacking(Entity entity)
         {
-            return entity.OverriddenColor == GoblinColor && EquippedSword != null && EquippedSword.Overlapping(entity) && TimeSinceAttack == TimeSpan.Zero;
+            return entity.OverriddenColor == GoblinColor && SwordEquipped && Overlapping(entity) && TimeSinceAttack == TimeSpan.Zero;
         }
 
         public bool Overlapping(Entity entity)

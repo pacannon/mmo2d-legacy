@@ -82,7 +82,7 @@ namespace Mmo2d
                                         //UpdateConnectionsList();
                                         var remoteUniqueIdentifier = im.SenderConnection.RemoteUniqueIdentifier;
 
-                                        State.Entities.Add(new Entity { Id = remoteUniqueIdentifier, EquippedSword = Entity.Sword });
+                                        State.Entities.Add(new Entity { Id = remoteUniqueIdentifier, SwordEquipped = true });
 
                                         NetOutgoingMessage om = NetServer.CreateMessage();
                                         var authoritativePacket = new AuthoritativePacket() { IdIssuance = remoteUniqueIdentifier, };
@@ -184,7 +184,7 @@ namespace Mmo2d
 
             var randomInt = new Random().Next();
 
-            State.Entities.Add(new Entity { Id = randomInt, EquippedSword = Entity.Sword });
+            State.Entities.Add(new Entity { Id = randomInt, SwordEquipped = true });
             ResponseQueue.Enqueue(new AuthoritativePacket { IdIssuance = randomInt });
         }
 
