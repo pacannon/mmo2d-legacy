@@ -19,8 +19,9 @@ namespace Mmo2d
         //object size
         public const float width = 0.2f;
         public const float height = 0.2f;
-        public float sprite_size = 17.0f;
+        public const float sprite_size = 17.0f;
 
+        [JsonIgnore]
         public int Row
         {
             get
@@ -29,6 +30,7 @@ namespace Mmo2d
             }
         }
 
+        [JsonIgnore]
         public int Column
         {
             get
@@ -41,6 +43,7 @@ namespace Mmo2d
 
         public Color? OverriddenColor { get; set; }
 
+        [JsonIgnore]
         public float Height { get
             {
                 if (TimeSinceJump == null)
@@ -65,9 +68,10 @@ namespace Mmo2d
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
+        [JsonIgnore]
         public float JumpVelocity { get { return (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration; } }
         public const float HalfAcceration = -2.81f / 2.0f;
-
+        [JsonIgnore]
         public int Hits { get; set; }
         public int Kills { get; set; }
         
@@ -286,6 +290,7 @@ namespace Mmo2d
         [JsonIgnore]
         public Vector2 TopRightCorner { get { return new Vector2(RightEdge, TopEdge); } }
 
+        [JsonIgnore]
         public float Width
         {
             get

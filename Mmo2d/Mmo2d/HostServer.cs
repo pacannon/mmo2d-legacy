@@ -201,6 +201,10 @@ namespace Mmo2d
                 NetServer.SendMessage(om, all, NetDeliveryMethod.UnreliableSequenced, 0);
             }
 
+            var k = packet.ToString();
+
+            Console.WriteLine(k);
+
             ResponseQueue.Enqueue(packet);
         }
 
