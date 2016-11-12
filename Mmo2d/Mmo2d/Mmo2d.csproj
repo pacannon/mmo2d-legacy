@@ -78,7 +78,13 @@
     <Compile Include="ServerUpdatePackets\ServerUpdatePacket.cs" />
     <Compile Include="AuthoritativePackets\AuthoritativePacket.cs" />
     <Compile Include="ShouldSerializeContractResolver.cs" />
-    <Compile Include="State.cs" />
+    <Compile Include="GameState.cs" />
+    <Compile Include="State\Entity\AttackingStateDifference.cs" />
+    <Compile Include="State\Entity\EntityStateDifference.cs" />
+    <Compile Include="State\Entity\MovingStateDifferences.cs" />
+    <Compile Include="State\Entity\TimeSinceJumpStateDifference.cs" />
+    <Compile Include="State\IStateDifference.cs" />
+    <Compile Include="State\IStateful.cs" />
     <Compile Include="Textures\TextureLoader.cs" />
     <Compile Include="Ui.cs" />
   </ItemGroup>
@@ -95,6 +101,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\roguelikeChar_transparent.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="State\GameState\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

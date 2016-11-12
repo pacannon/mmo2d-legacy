@@ -7,10 +7,12 @@ using OpenTK.Input;
 using System.Drawing;
 using Mmo2d.ServerUpdatePackets;
 using Newtonsoft.Json;
+using Mmo2d.State;
+using Mmo2d.State.Entity;
 
 namespace Mmo2d
 {
-    public class Entity
+    public class Entity : IStateful<Entity>
     {
         public Vector2 Location { get; set; }
 
@@ -63,8 +65,7 @@ namespace Mmo2d
         public TimeSpan? TimeSinceAttack { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
-
-        public const float SwordLength = 0.4f;
+        
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
@@ -78,12 +79,8 @@ namespace Mmo2d
         public bool SwordEquipped { get; set; }
         public const float Speed = 0.01f;
 
-        [JsonIgnore]
-        public List<Action> UnstagedChanges { get; set; }
-
         public Entity()
         {
-            UnstagedChanges = new List<Action>();
         }
 
         public Entity(Vector2 location) : this()
@@ -125,64 +122,74 @@ namespace Mmo2d
             GL.Disable(EnableCap.Blend);
         }
 
-        public void InputHandler(ServerUpdatePacket serverUpdatePacket)
+        public IEnumerable<IStateDifference<Entity>> InputHandler(ServerUpdatePacket serverUpdatePacket)
         {
-            HandleKeyEventArgs(serverUpdatePacket?.KeyEventArgs);
+            var stateDifferences = new List<IStateDifference<Entity>>();
+
+            stateDifferences.AddRange(HandleKeyEventArgs(serverUpdatePacket?.KeyEventArgs));
 
             if (serverUpdatePacket?.MousePressed != null)
             {
-                UnstagedChanges.Add(() => { AttackKeyDown = serverUpdatePacket.MousePressed.Value; });
+                stateDifferences.Add(new AttackingStateDifference(Id));
             }
+
+            return stateDifferences;
         }
 
-        private void HandleKeyEventArgs(KeyEventArgs keyEventArgs)
+        private IEnumerable<IStateDifference<Entity>> HandleKeyEventArgs(KeyEventArgs keyEventArgs)
         {
+            var stateDifferences = new List<IStateDifference<Entity>>();
+
+            if (keyEventArgs == null || keyEventArgs.IsRepeat)
+            {
+                return stateDifferences;
+            }
+
             if (keyEventArgs?.Key == Key.W)
             {
-                UnstagedChanges.Add(() => { MoveUpKeyDown = keyEventArgs.KeyDown; });
+                stateDifferences.Add(new MovingUpStateDifference(Id));
             }
             else if (keyEventArgs?.Key == Key.S)
             {
-                UnstagedChanges.Add(() => { MoveDownKeyDown = keyEventArgs.KeyDown; });
-            }
-            else if (keyEventArgs?.Key == Key.D)
-            {
-                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown; });
+                stateDifferences.Add(new MovingDownStateDifference(Id));
             }
             else if (keyEventArgs?.Key == Key.A)
             {
-                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown; });
+                stateDifferences.Add(new MovingLeftStateDifference(Id));
+            }
+            else if (keyEventArgs?.Key == Key.D)
+            {
+                stateDifferences.Add(new MovingRightStateDifference(Id));
             }
             else if (keyEventArgs?.Key != null && keyEventArgs.Key == Key.Space)
             {
-                if (keyEventArgs.IsRepeat == false && TimeSinceJump == null)
+                if (keyEventArgs.IsRepeat == false && TimeSinceJump == null && keyEventArgs.KeyDown)
                 {
-                    UnstagedChanges.Add(() => { TimeSinceJump = (keyEventArgs.KeyDown ? TimeSpan.Zero : (TimeSpan?)null); });
+                    stateDifferences.Add(new TimeSinceJumpStateDifference(TimeSinceJump, TimeSpan.Zero, Id));
                 }
             }
+
+            return stateDifferences;
         }
 
         [JsonIgnore]
-        public bool MoveUpKeyDown { get; set; }
+        public bool MovingUp { get; set; }
         [JsonIgnore]
-        public bool MoveDownKeyDown { get; set; }
+        public bool MovingDown { get; set; }
         [JsonIgnore]
-        public bool MoveLeftKeyDown { get; set; }
+        public bool MovingLeft { get; set; }
         [JsonIgnore]
-        public bool MoveRightKeyDown { get; set; }
+        public bool MovingRight { get; set; }
         [JsonIgnore]
-        public bool AttackKeyDown { get; set; }
+        public bool Attacking { get; set; }
 
         public void Update(TimeSpan delta, IEnumerable<Entity> entities)
         {
-            UnstagedChanges.ForEach(uc => uc.Invoke());
-            UnstagedChanges.Clear();
-
             if (TimeSinceAttack != null)
             {
                 if (TimeSinceAttack == TimeSpan.Zero)
                 {
-                    foreach (var attackedEntity in entities.Where(e => Attacking(e)))
+                    foreach (var attackedEntity in entities.Where(e => IsAttacking(e)))
                     {
                         attackedEntity.Hits++;
 
@@ -217,7 +224,7 @@ namespace Mmo2d
                 TimeSinceDeath += delta;
             }
 
-            if (AttackKeyDown && SwordEquipped)
+            if (Attacking && SwordEquipped)
             {
                 TimeSinceAttack = TimeSpan.Zero;
             }
@@ -229,22 +236,22 @@ namespace Mmo2d
         {
             var displacementVector = Vector2.Zero;
 
-            if (MoveUpKeyDown)
+            if (MovingUp)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(Vector2.UnitY, 0.644f));
             }
 
-            if (MoveDownKeyDown)
+            if (MovingDown)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(-Vector2.UnitY, 0.644f));
             }
 
-            if (MoveRightKeyDown)
+            if (MovingRight)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
             }
 
-            if (MoveLeftKeyDown)
+            if (MovingLeft)
             {
                 displacementVector = Vector2.Add(displacementVector, -Vector2.UnitX);
             }
@@ -257,7 +264,7 @@ namespace Mmo2d
             }
         }
 
-        public bool Attacking(Entity entity)
+        public bool IsAttacking(Entity entity)
         {
             return entity.OverriddenColor == GoblinColor && SwordEquipped && Overlapping(entity) && TimeSinceAttack == TimeSpan.Zero;
         }
@@ -271,6 +278,21 @@ namespace Mmo2d
         public bool Overlapping(Vector2 location)
         {
             return TopEdge > location.Y && BottomEdge < location.Y && LeftEdge < location.X && RightEdge > location.X;
+        }
+
+        public Entity Apply(IStateDifference difference)
+        {
+            return difference.Apply(this);
+        }
+
+        public Entity Unapply(IStateDifference difference)
+        {
+            return difference.Unapply(this);
+        }
+
+        public Entity Clone()
+        {
+            return (Entity)MemberwiseClone();
         }
 
         [JsonIgnore]

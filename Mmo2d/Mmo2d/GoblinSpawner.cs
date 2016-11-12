@@ -8,11 +8,11 @@ namespace Mmo2d
 {
     public class GoblinSpawner
     {
-        public const int MaxGoblins = 4;
+        public const int MaxGoblins = 8;
         public const float SpawningRadius = 1.0f;
         public static readonly TimeSpan SpawningInterval = TimeSpan.FromMilliseconds(643.0);
 
-        public List<Entity> SpawnedGoblins { get; set; }
+        public List<long> SpawnedGoblinIds { get; set; }
 
         public float X, Y;
 
@@ -23,7 +23,7 @@ namespace Mmo2d
 
         public GoblinSpawner(Vector2 position)
         {
-            SpawnedGoblins = new List<Entity>();
+            SpawnedGoblinIds = new List<long>();
             X = position.X;
             Y = position.Y;
             TimeSinceLastGoblinAddition = TimeSpan.Zero;
@@ -34,15 +34,15 @@ namespace Mmo2d
         { 
             TimeSinceLastGoblinAddition += delta;
 
-            foreach (var spawnedGoblin in SpawnedGoblins.ToList())
+            foreach (var spawnedGoblinId in SpawnedGoblinIds.ToList())
             {
-                if (!entities.Any(e => e.Id == spawnedGoblin.Id))
+                if (!entities.Any(e => e.Id == spawnedGoblinId))
                 {
-                    SpawnedGoblins.Remove(spawnedGoblin);
+                    SpawnedGoblinIds.Remove(spawnedGoblinId);
                 }
             }
 
-            if (SpawnedGoblins.Count < MaxGoblins && TimeSinceLastGoblinAddition >= SpawningInterval)
+            if (SpawnedGoblinIds.Count < MaxGoblins && TimeSinceLastGoblinAddition >= SpawningInterval)
             {
                 var newlySpawnedGoblin = new Entity() { OverriddenColor = Entity.GoblinColor, Id = Random.Next()};
 
@@ -59,8 +59,13 @@ namespace Mmo2d
                 TimeSinceLastGoblinAddition = TimeSpan.Zero;
 
                 entities.Add(newlySpawnedGoblin);
-                SpawnedGoblins.Add(newlySpawnedGoblin);
+                SpawnedGoblinIds.Add(newlySpawnedGoblin.Id);
             }
+        }
+
+        public GoblinSpawner Clone()
+        {
+            return (GoblinSpawner)this.MemberwiseClone();
         }
     }
 }

@@ -16,13 +16,13 @@ namespace Mmo2d
     {
         public ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; private set; }
 
-        public State State { get; set; }
+        public GameState GameState { get; set; }
 
         public NetClient NetClient { get; set; }
 
         public ClientServer(string hostIpAddress)
         {
-            State = new State();
+            GameState = new GameState();
 
             ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
 
