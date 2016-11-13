@@ -12,7 +12,7 @@ using Mmo2d.State.Entity;
 
 namespace Mmo2d
 {
-    public class Entity : IStateful<Entity>
+    public class Entity : IStateful<Entity, IStateDifference<Entity>, Entity>
     {
         public Vector2 Location { get; set; }
 
@@ -28,7 +28,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : ((int)Id) % 6 + 5;
+                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : (int)(((uint)Id) % 6 + 5);
             }
         }
 
@@ -122,9 +122,9 @@ namespace Mmo2d
             GL.Disable(EnableCap.Blend);
         }
 
-        public IEnumerable<IStateDifference<Entity>> InputHandler(ServerUpdatePacket serverUpdatePacket)
+        public IEnumerable<EntityStateDifference> InputHandler(ServerUpdatePacket serverUpdatePacket)
         {
-            var stateDifferences = new List<IStateDifference<Entity>>();
+            var stateDifferences = new List<EntityStateDifference>();
 
             stateDifferences.AddRange(HandleKeyEventArgs(serverUpdatePacket?.KeyEventArgs));
 
@@ -136,9 +136,9 @@ namespace Mmo2d
             return stateDifferences;
         }
 
-        private IEnumerable<IStateDifference<Entity>> HandleKeyEventArgs(KeyEventArgs keyEventArgs)
+        private IEnumerable<EntityStateDifference> HandleKeyEventArgs(KeyEventArgs keyEventArgs)
         {
-            var stateDifferences = new List<IStateDifference<Entity>>();
+            var stateDifferences = new List<EntityStateDifference>();
 
             if (keyEventArgs == null || keyEventArgs.IsRepeat)
             {
@@ -280,19 +280,21 @@ namespace Mmo2d
             return TopEdge > location.Y && BottomEdge < location.Y && LeftEdge < location.X && RightEdge > location.X;
         }
 
-        public Entity Apply(IStateDifference difference)
-        {
-            return difference.Apply(this);
-        }
-
-        public Entity Unapply(IStateDifference difference)
-        {
-            return difference.Unapply(this);
-        }
-
-        public Entity Clone()
+        public object Clone()
         {
             return (Entity)MemberwiseClone();
+        }
+
+        public Entity Apply(IEnumerable<IStateDifference<Entity>> differences)
+        {
+            var nextEntity = (Entity)this.Clone();
+
+            foreach (var difference in differences)
+            {
+                nextEntity = difference.Apply(this);
+            }
+
+            return nextEntity;
         }
 
         [JsonIgnore]

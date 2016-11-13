@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Mmo2d.State;
+using Mmo2d.State.CharacterController;
 
 namespace Mmo2d
 {
@@ -20,17 +22,20 @@ namespace Mmo2d
 
         public NetClient NetClient { get; set; }
 
+        public uint Tick { get; set; }
+
         public ClientServer(string hostIpAddress)
         {
             GameState = new GameState();
 
             ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
 
-
             NetPeerConfiguration config = new NetPeerConfiguration(HostServer.ApplicationIdentifier);
+
+            //config.SimulatedMinimumLatency = 0.1f;
+
             config.AutoFlushSendQueue = false;
             NetClient = new NetClient(config);
-
 
             var t = new Task(() =>
             {
@@ -75,6 +80,11 @@ namespace Mmo2d
 
                                 AuthoritativePacket authoritativePacket = JsonSerializer.Deserialize<AuthoritativePacket>(serializedAuthoritativePacket);
 
+                                if (authoritativePacket.GameState != null && authoritativePacket.GameState.Tick > Tick)
+                                {
+                                    Tick = authoritativePacket.GameState.Tick;
+                                }
+
                                 ResponseQueue.Enqueue(authoritativePacket);
                                 break;
                             default:
@@ -94,9 +104,9 @@ namespace Mmo2d
             t.Start();
         }
 
-        public void SendMessage(ServerUpdatePacket message)
+        public void SendMessage(ServerUpdatePacket differences)
         {
-            var serializedMessage = message.ToString();
+            var serializedMessage = differences.ToString();
             NetOutgoingMessage netOutGoindMessage = NetClient.CreateMessage(serializedMessage);
             NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableSequenced);
             NetClient.FlushSendQueue();

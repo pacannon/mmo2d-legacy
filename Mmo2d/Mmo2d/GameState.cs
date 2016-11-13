@@ -7,13 +7,13 @@ using Mmo2d.State.Entity;
 
 namespace Mmo2d
 {
-    public class GameState : IStateful<GameState>
+    public class GameState : IStateful<GameState, EntityStateDifference, Entity>
     {
         public List<Entity> Entities { get; set; }
 
         public TimeSpan ElapsedTime { get; set; }
 
-        public int Updates { get; set; }
+        public uint Tick { get; set; }
 
         [JsonIgnore]
         public GoblinSpawner GoblinSpawner { get; set; }
@@ -35,7 +35,7 @@ namespace Mmo2d
         {
             ElapsedTime += delta;
 
-            Updates++;
+            Tick++;
 
             var entitiesCopy = Entities.ToList();
 
@@ -49,46 +49,46 @@ namespace Mmo2d
             GoblinSpawner?.Update(delta, Entities);
         }
 
-        public GameState Clone()
+        public object Clone()
         {
             var clone = new GameState();
 
             foreach (var entitiy in Entities)
             {
-                clone.Entities.Add(entitiy.Clone());
+                clone.Entities.Add((Entity)entitiy.Clone());
             }
 
             clone.ElapsedTime = ElapsedTime;
-            clone.Updates = Updates;
+            clone.Tick = Tick;
             clone.GoblinSpawner = GoblinSpawner.Clone();
 
             return clone;
         }
-
-        public GameState Apply(IStateDifference difference)
+        
+        public GameState Apply(IEnumerable<EntityStateDifference> differences)
         {
-            var clone = this.Clone();
+            var clone = (GameState)this.Clone();
 
-            var entityStateDifference = difference as EntityStateDifference;
-
-            if (entityStateDifference == null)
+            foreach (var difference in differences)
             {
+                var entityStateDifference = difference as EntityStateDifference;
+
+                if (entityStateDifference == null)
+                {
+                    return clone;
+                }
+
+                var matchingEntity = clone.Entities.First(e => e.Id == entityStateDifference.EntityId);
+
+                var modifiedEntity = difference.Apply(matchingEntity);
+
+                clone.Entities.Remove(matchingEntity);
+                clone.Entities.Add(modifiedEntity);
+
                 return clone;
             }
 
-            var matchingEntity = clone.Entities.First(e => e.Id == entityStateDifference.EntityId);
-
-            var modifiedEntity = entityStateDifference.Apply(matchingEntity);
-
-            clone.Entities.Remove(matchingEntity);
-            clone.Entities.Add(modifiedEntity);
-
             return clone;
-        }
-
-        public GameState Unapply(IStateDifference difference)
-        {
-            throw new NotImplementedException();
         }
     }
 }

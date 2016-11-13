@@ -14,10 +14,5 @@
 
             return clone;
         }
-
-        public override Mmo2d.Entity Unapply(Mmo2d.Entity entity)
-        {
-            return Apply(entity);
-        }
     }
 }

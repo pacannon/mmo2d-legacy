@@ -14,11 +14,6 @@
 
             return clone;
         }
-
-        public override Mmo2d.Entity Unapply(Mmo2d.Entity entity)
-        {
-            return Apply(entity);
-        }
     }
 
     public class MovingDownStateDifference : EntityStateDifference, IStateDifference<Mmo2d.Entity>
@@ -34,11 +29,6 @@
             clone.MovingDown = !entity.MovingDown;
 
             return clone;
-        }
-
-        public override Mmo2d.Entity Unapply(Mmo2d.Entity entity)
-        {
-            return Apply(entity);
         }
     }
 
@@ -56,11 +46,6 @@
 
             return clone;
         }
-
-        public override Mmo2d.Entity Unapply(Mmo2d.Entity entity)
-        {
-            return Apply(entity);
-        }
     }
 
     public class MovingRightStateDifference : EntityStateDifference, IStateDifference<Mmo2d.Entity>
@@ -76,11 +61,6 @@
             clone.MovingRight = !entity.MovingRight;
 
             return clone;
-        }
-
-        public override Mmo2d.Entity Unapply(Mmo2d.Entity entity)
-        {
-            return Apply(entity);
         }
     }
 }

@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Mmo2d.State;
+using Mmo2d.State.CharacterController;
 
 namespace Mmo2d
 {
@@ -28,6 +30,8 @@ namespace Mmo2d
 
         public NetServer NetServer { get; set; }
         public Stopwatch Stopwatch { get; set; }
+
+        public uint Tick { get; set; }
 
         public HostServer()
         {
@@ -161,11 +165,8 @@ namespace Mmo2d
                         var differences = player?.InputHandler(packet);
 
                         var modifiedGameState = GameState;
-
-                        foreach (var difference in differences)
-                        {
-                            modifiedGameState = modifiedGameState.Apply(difference);
-                        }
+                        
+                        modifiedGameState = modifiedGameState.Apply(differences);
 
                         GameState = modifiedGameState;                
                     }
@@ -175,7 +176,9 @@ namespace Mmo2d
                     GameState.Update(elapsed - lastElapsed);
                     lastElapsed = elapsed;
 
-                    GameStateClone = GameState.Clone();
+                    GameStateClone = (GameState)GameState.Clone();
+
+                    Tick = GameState.Tick;
 
                     Thread.Sleep(TimeSpan.FromMilliseconds(1000.0 / 60.0));
                 }
@@ -216,6 +219,11 @@ namespace Mmo2d
         public void SendMessage(ServerUpdatePacket message)
         {
             UpdateQueue.Enqueue(message);
+        }
+
+        public void SendMessage(IEnumerable<IStateDifference<CharacterController>> differences)
+        {
+            throw new NotImplementedException();
         }
     }
 }

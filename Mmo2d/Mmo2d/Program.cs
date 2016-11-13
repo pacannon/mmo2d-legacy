@@ -9,6 +9,7 @@ using Mmo2d.AuthoritativePackets;
 using Mmo2d.ServerUpdatePackets;
 using System.Linq;
 using Mmo2d.Textures;
+using System.Collections.Generic;
 
 namespace Example
 {
@@ -16,15 +17,17 @@ namespace Example
     {
         static IServer Server { get; set; }
         public static long? IssuedId { get; private set; }
-
-        public static GameState GameState;
+        
         public static Ui Ui;
         public static TextureLoader TextureLoader;
+
+        public static SortedDictionary<uint, GameState> GameStates { get; set; }
         
         [STAThread]
         public static void Main()
         {
-            GameState = new GameState();
+            GameStates = new SortedDictionary<uint, GameState>();
+
             DisplayLogin();
                 
             using (var game = new GameWindow())
@@ -83,16 +86,31 @@ namespace Example
 
                     Entity playerEntity = null;
 
-                    if (GameState != null)
+                    GameState gameState = null;
+                    uint tickOffset = 6;
+
+                    while (gameState == null && tickOffset < 100)
                     {
-                        playerEntity = GameState.Entities.FirstOrDefault(en => en.Id == IssuedId);
+                        var tick = Server.Tick - tickOffset;
+
+                        if (GameStates.ContainsKey(tick))
+                        {
+                            gameState = GameStates[tick];
+                        }
+
+                        tickOffset++;
+                    }
+
+                    if (gameState != null)
+                    {
+                        playerEntity = gameState.Entities.FirstOrDefault(en => en.Id == IssuedId);
 
                         if (playerEntity != null)
                         {
                             GL.Ortho(playerEntity.Location.X - 1.0, playerEntity.Location.X + 1.0, playerEntity.Location.Y - 1.0, playerEntity.Location.Y + 1.0, 0.0, 4.0);
                         }
 
-                        GameState.Render();
+                        gameState.Render();
                     }
 
                     Ui.Render(playerEntity, game.Width, game.Height);
@@ -155,12 +173,12 @@ namespace Example
 
                 if (packet.GameState != null)
                 {
-                    GameState = packet.GameState;
-                }
+                    GameStates[packet.GameState.Tick] = packet.GameState;
 
-                if (packet != null)
-                {
-                    GameState = packet.GameState;
+                    if (GameStates.Last().Key - GameStates.First().Key > 100)
+                    {
+                        GameStates.Remove(GameStates.First().Key);
+                    }
                 }
             }
         }

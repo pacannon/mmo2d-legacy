@@ -79,6 +79,7 @@
     <Compile Include="AuthoritativePackets\AuthoritativePacket.cs" />
     <Compile Include="ShouldSerializeContractResolver.cs" />
     <Compile Include="GameState.cs" />
+    <Compile Include="State\CharacterController\CharacterController.cs" />
     <Compile Include="State\Entity\AttackingStateDifference.cs" />
     <Compile Include="State\Entity\EntityStateDifference.cs" />
     <Compile Include="State\Entity\MovingStateDifferences.cs" />

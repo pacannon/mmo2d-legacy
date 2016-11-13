@@ -21,14 +21,5 @@ namespace Mmo2d.State.Entity
 
             return clone;
         }
-
-        public override Mmo2d.Entity Unapply(Mmo2d.Entity entity)
-        {
-            var clone = (Mmo2d.Entity)entity.Clone();
-
-            clone.TimeSinceJump = Before;
-
-            return clone;
-        }
     }
 }

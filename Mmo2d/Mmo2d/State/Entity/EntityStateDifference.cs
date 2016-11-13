@@ -10,6 +10,5 @@
         }
 
         public abstract Mmo2d.Entity Apply(Mmo2d.Entity state);
-        public abstract Mmo2d.Entity Unapply(Mmo2d.Entity state);
     }
 }
