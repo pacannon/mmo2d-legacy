@@ -16,13 +16,13 @@ namespace Mmo2d
     {
         public ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; private set; }
 
-        public State State { get; set; }
+        public GameState State { get; set; }
 
         public NetClient NetClient { get; set; }
 
         public ClientServer(string hostIpAddress)
         {
-            State = new State();
+            State = new GameState();
 
             ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
 
@@ -56,18 +56,18 @@ namespace Mmo2d
                                 Console.WriteLine(text);
                                 break;
                             case NetIncomingMessageType.StatusChanged:
-                                //NetConnectionStatus status = (NetConnectionStatus)im.ReadByte();
+                                NetConnectionStatus status = (NetConnectionStatus)im.ReadByte();
 
-                                //if (status == NetConnectionStatus.Connected)
-                                //    //s_form.EnableInput();
-                                //else
-                                //    //s_form.DisableInput();
+                                if (status == NetConnectionStatus.Connected) { }
+                                //s_form.EnableInput();
+                                else
+                                //s_form.DisableInput();
 
-                                //if (status == NetConnectionStatus.Disconnected)
-                                //    //s_form.button2.Text = "Connect";
+                                if (status == NetConnectionStatus.Disconnected) { }
+                                    //s_form.button2.Text = "Connect";
 
-                                //string reason = im.ReadString();
-                                //Console.WriteLine(status.ToString() + ": " + reason);
+                                    string reason = im.ReadString();
+                                Console.WriteLine(status.ToString() + ": " + reason);
 
                                 break;
                             case NetIncomingMessageType.Data:
@@ -98,7 +98,7 @@ namespace Mmo2d
         {
             var serializedMessage = message.ToString();
             NetOutgoingMessage netOutGoindMessage = NetClient.CreateMessage(serializedMessage);
-            NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableSequenced);
+            NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableOrdered);
             NetClient.FlushSendQueue();
         }
     }

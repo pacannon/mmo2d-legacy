@@ -3,7 +3,7 @@
     public class AuthoritativePacket
     {
         public long? IdIssuance { get; set; }
-        public State State { get; set; }
+        public GameState State { get; set; }
 
         public override string ToString()
         {

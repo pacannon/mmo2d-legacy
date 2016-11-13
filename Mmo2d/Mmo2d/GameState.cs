@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Mmo2d
 {
-    public class State
+    public class GameState
     {
         public List<Entity> Entities { get; set; }
 
@@ -16,7 +16,7 @@ namespace Mmo2d
 
         public int Updates { get; set; }
 
-        public State()
+        public GameState()
         {
             Entities = new List<Entity>();
         }
@@ -34,7 +34,8 @@ namespace Mmo2d
             ElapsedTime += delta;
 
             Updates++;
-               var entitiesCopy = Entities.ToList();
+
+            var entitiesCopy = Entities.ToList();
 
             foreach (var entity in entitiesCopy)
             {
@@ -46,7 +47,7 @@ namespace Mmo2d
             GoblinSpawner.Update(delta, Entities);
         }
 
-        public State Clone()
+        public GameState Clone()
         {
             // initialize inner objects individually
             // for example in default constructor some list property initialized with some values,
@@ -55,7 +56,7 @@ namespace Mmo2d
             //var deserializeSettings = new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
 
             var serialized = JsonSerializer.Serialize(this);
-            return JsonSerializer.Deserialize<State>(serialized);
+            return JsonSerializer.Deserialize<GameState>(serialized);
         }
     }
 }

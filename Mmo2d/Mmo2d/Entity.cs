@@ -127,9 +127,12 @@ namespace Mmo2d
 
         public void InputHandler(ServerUpdatePacket serverUpdatePacket)
         {
-            HandleKeyEventArgs(serverUpdatePacket?.KeyEventArgs);
+            if (serverUpdatePacket.KeyEventArgs != null)
+            {
+                HandleKeyEventArgs(serverUpdatePacket.KeyEventArgs);
+            }
 
-            if (serverUpdatePacket?.MousePressed != null)
+            if (serverUpdatePacket.MousePressed != null)
             {
                 UnstagedChanges.Add(() => { AttackKeyDown = serverUpdatePacket.MousePressed.Value; });
             }
@@ -137,23 +140,23 @@ namespace Mmo2d
 
         private void HandleKeyEventArgs(KeyEventArgs keyEventArgs)
         {
-            if (keyEventArgs?.Key == Key.W)
+            if (keyEventArgs.Key == Key.W)
             {
                 UnstagedChanges.Add(() => { MoveUpKeyDown = keyEventArgs.KeyDown; });
             }
-            else if (keyEventArgs?.Key == Key.S)
+            else if (keyEventArgs.Key == Key.S)
             {
                 UnstagedChanges.Add(() => { MoveDownKeyDown = keyEventArgs.KeyDown; });
             }
-            else if (keyEventArgs?.Key == Key.D)
+            else if (keyEventArgs.Key == Key.D)
             {
                 UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown; });
             }
-            else if (keyEventArgs?.Key == Key.A)
+            else if (keyEventArgs.Key == Key.A)
             {
                 UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown; });
             }
-            else if (keyEventArgs?.Key != null && keyEventArgs.Key == Key.Space)
+            else if (keyEventArgs.Key != null && keyEventArgs.Key == Key.Space)
             {
                 if (keyEventArgs.IsRepeat == false && TimeSinceJump == null)
                 {

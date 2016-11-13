@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,8 +24,8 @@ namespace Mmo2d
         public const int Port = 11000;
         public const string ApplicationIdentifier = "mmo2d";
 
-        public State State { get; set; }
-        public State StateClone { get; set; }
+        public GameState State { get; set; }
+        public GameState StateClone { get; set; }
 
         public NetServer NetServer { get; set; }
         public Stopwatch Stopwatch { get; set; }
@@ -32,7 +33,7 @@ namespace Mmo2d
         public HostServer()
         {
             Stopwatch = Stopwatch.StartNew();
-            State = new State { GoblinSpawner = new GoblinSpawner(Vector2.Zero) };
+            State = new GameState { GoblinSpawner = new GoblinSpawner(Vector2.Zero) };
 
             NetPeerConfiguration config = new NetPeerConfiguration(ApplicationIdentifier);
             config.MaximumConnections = 100;
@@ -53,10 +54,8 @@ namespace Mmo2d
                 {
                     NetIncomingMessage im;
 
-                    while (NetServer.MessageReceivedEvent.WaitOne())
+                    while ((im = NetServer.ReadMessage()) != null)
                     {
-                        im = NetServer.ReadMessage();
-
                         // handle incoming message
                         switch (im.MessageType)
                         {
@@ -158,7 +157,10 @@ namespace Mmo2d
 
                         var player = State.Entities.Where(e => e.Id == packet.PlayerId).FirstOrDefault();
 
-                        player?.InputHandler(packet);
+                        if (player != null)
+                        {
+                            player.InputHandler(packet);
+                        }
                     }
 
                     var elapsed = TimeSpan.FromMilliseconds(Stopwatch.ElapsedMilliseconds);
@@ -181,11 +183,6 @@ namespace Mmo2d
             });
 
             updateStateTask.Start();
-
-            var randomInt = new Random().Next();
-
-            State.Entities.Add(new Entity { Id = randomInt, SwordEquipped = true });
-            ResponseQueue.Enqueue(new AuthoritativePacket { IdIssuance = randomInt });
         }
 
         private void SendToAllClients(AuthoritativePacket packet)
@@ -200,10 +197,6 @@ namespace Mmo2d
                 om.Write(serializedPacket);
                 NetServer.SendMessage(om, all, NetDeliveryMethod.UnreliableSequenced, 0);
             }
-
-            var k = packet.ToString();
-
-            Console.WriteLine(k);
 
             ResponseQueue.Enqueue(packet);
         }
