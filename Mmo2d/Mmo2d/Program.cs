@@ -15,16 +15,17 @@ namespace Example
     class MyApplication
     {
         static IServer Server { get; set; }
+        static IServer AuthoritativeServer { get; set; }
         public static long? IssuedId { get; private set; }
 
-        public static State State;
+        public static GameState State;
         public static Ui Ui;
         public static TextureLoader TextureLoader;
         
         [STAThread]
         public static void Main()
         {
-            State = new State();
+            State = new GameState();
             DisplayLogin();
                 
             using (var game = new GameWindow())
@@ -200,33 +201,36 @@ namespace Example
 
         private static void HostServer()
         {
-            Server = new HostServer();
+            AuthoritativeServer = new HostServer();
+            ConnectToServer("127.0.0.1");
         }
 
-        private static void ConnectToServer()
+        private static void ConnectToServer(string hostIpString = null)
         {
-            var validInput = false;
-
-            IPAddress hostIp = IPAddress.None;
-            String input = null;
-
-            while (!validInput)
+            if (hostIpString == null)
             {
-                validInput = true;
+                var validInput = false;
 
-                Console.WriteLine("Enter host IP:");
+                IPAddress hostIp = IPAddress.None;
 
-                input = Console.ReadLine();
-
-                validInput = IPAddress.TryParse(input, out hostIp);
-
-                if (!validInput)
+                while (!validInput)
                 {
-                    Console.WriteLine(@"Error: Invalid IP address: ""{0}""", input);
+                    validInput = true;
+
+                    Console.WriteLine("Enter host IP:");
+
+                    hostIpString = Console.ReadLine();
+
+                    validInput = IPAddress.TryParse(hostIpString, out hostIp);
+
+                    if (!validInput)
+                    {
+                        Console.WriteLine(@"Error: Invalid IP address: ""{0}""", hostIpString);
+                    }
                 }
             }
 
-            Server = new ClientServer(input);
+            Server = new ClientServer(hostIpString);
         }
     }
 }
