@@ -12,71 +12,31 @@ namespace Mmo2d
 {
     public class Entity
     {
-        public Vector2 Location { get; set; }
-
         public static int CharacterTextureId { get; set; }
 
-        //object size
+        public const float Speed = 0.01f;
         public const float width = 0.2f;
         public const float height = 0.2f;
         public const float sprite_size = 17.0f;
-
-        [JsonIgnore]
-        public int Row
-        {
-            get
-            {
-                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : ((int)Id) % 6 + 5;
-            }
-        }
-
-        [JsonIgnore]
-        public int Column
-        {
-            get
-            {
-                return OverriddenColor == Color.Red ? 43 : 0;
-            }
-        }
-
-        public long Id { get; set; }
-
-        public Color? OverriddenColor { get; set; }
-
-        [JsonIgnore]
-        public float Height { get
-            {
-                if (TimeSinceJump == null)
-                {
-                    return 0.0f;
-                }
-
-                var time = (float)TimeSinceJump.Value.TotalSeconds;
-                var t2 = time * time;
-
-                var distanceTravelled = time * JumpVelocity;
-
-                return distanceTravelled + HalfAcceration * t2;
-            }
-        }
-
-        public TimeSpan? TimeSinceAttack { get; set; }
-        public TimeSpan? TimeSinceDeath { get; private set; }
-        public TimeSpan? TimeSinceJump { get; set; }
-
         public const float SwordLength = 0.4f;
+        public const float HalfAcceration = -2.81f / 2.0f;
+
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
-        [JsonIgnore]
-        public float JumpVelocity { get { return (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration; } }
-        public const float HalfAcceration = -2.81f / 2.0f;
+        public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
+
+        public long Id { get; set; }        
+        public Vector2 Location { get; set; }
+        public Color? OverriddenColor { get; set; }
+        public TimeSpan? TimeSinceAttack { get; set; }
+        public TimeSpan? TimeSinceDeath { get; private set; }
+        public TimeSpan? TimeSinceJump { get; set; }
+        public int Kills { get; set; }
+        public bool SwordEquipped { get; set; }
+
         [JsonIgnore]
         public int Hits { get; set; }
-        public int Kills { get; set; }
-        
-        public bool SwordEquipped { get; set; }
-        public const float Speed = 0.01f;
 
         [JsonIgnore]
         public List<Action> UnstagedChanges { get; set; }
@@ -299,6 +259,43 @@ namespace Mmo2d
             get
             {
                 return width;
+            }
+        }
+
+        [JsonIgnore]
+        public int Row
+        {
+            get
+            {
+                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : ((int)Id) % 6 + 5;
+            }
+        }
+
+        [JsonIgnore]
+        public int Column
+        {
+            get
+            {
+                return OverriddenColor == Color.Red ? 43 : 0;
+            }
+        }
+
+        [JsonIgnore]
+        public float Height
+        {
+            get
+            {
+                if (TimeSinceJump == null)
+                {
+                    return 0.0f;
+                }
+
+                var time = (float)TimeSinceJump.Value.TotalSeconds;
+                var t2 = time * time;
+
+                var distanceTravelled = time * JumpVelocity;
+
+                return distanceTravelled + HalfAcceration * t2;
             }
         }
     }
