@@ -103,12 +103,22 @@ namespace Example
 
                 game.KeyDown += (sender, e) =>
                 {
-                    Server.QueueUserCommand(new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, IsRepeat = e.IsRepeat, }, });
+                    if (e.IsRepeat)
+                    {
+                        return;
+                    }
+
+                    Server.QueueUserCommand(new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, }, });
                 };
 
                 game.KeyUp += (sender, e) =>
                 {
-                    Server.QueueUserCommand(new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, IsRepeat = e.IsRepeat,}, });
+                    if (e.IsRepeat)
+                    {
+                        return;
+                    }
+
+                    Server.QueueUserCommand(new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, }, });
                 };
 
                 game.MouseDown += (sender, e) =>

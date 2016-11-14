@@ -4,8 +4,6 @@ namespace Mmo2d.UserCommands
 {
     public class UserCommand
     {
-        public static readonly UserCommand NoChange = new UserCommand();
-
         [JsonIgnore]
         public long? PlayerId { get; set; }
 

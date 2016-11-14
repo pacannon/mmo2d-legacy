@@ -19,7 +19,7 @@ namespace Mmo2d
         public CancellationTokenSource ServerResponseListenerCancellationTokenSource { get; set; }
 
         public ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; set; }
-        public ConcurrentQueue<UserCommand> UpdateQueue { get; set; }
+        public ConcurrentQueue<UserCommand> UserCommandQueue { get; set; }
 
         public const int Port = 11000;
         public const string ApplicationIdentifier = "mmo2d";
@@ -44,7 +44,7 @@ namespace Mmo2d
             NetServer.Start();
 
             ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
-            UpdateQueue = new ConcurrentQueue<UserCommand>();
+            UserCommandQueue = new ConcurrentQueue<UserCommand>();
 
             ServerResponseListenerCancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = ServerResponseListenerCancellationTokenSource.Token;
@@ -138,9 +138,9 @@ namespace Mmo2d
                 {
                     var awakened = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
 
-                    while (UpdateQueue.Count > 0)
+                    while (UserCommandQueue.Count > 0)
                     {
-                        UserCommand packet = null;
+                        UserCommand userCommand = null;
 
                         bool dequeueSucceeded = false;
 
@@ -148,7 +148,7 @@ namespace Mmo2d
                         {
                             try
                             {
-                                dequeueSucceeded = UpdateQueue.TryDequeue(out packet);
+                                dequeueSucceeded = UserCommandQueue.TryDequeue(out userCommand);
                             }
 
                             catch (InvalidOperationException)
@@ -159,11 +159,11 @@ namespace Mmo2d
 
                         while (!dequeueSucceeded);
 
-                        var player = GameState.Entities.Where(e => e.Id == packet.PlayerId).FirstOrDefault();
+                        var playerEntity = GameState.Entities.Where(e => e.Id == userCommand.PlayerId).FirstOrDefault();
 
-                        if (player != null)
+                        if (playerEntity != null)
                         {
-                            player.InputHandler(packet);
+                            playerEntity.InputHandler(userCommand);
                         }
                     }
 
@@ -211,7 +211,7 @@ namespace Mmo2d
 
         public void QueueUserCommand(UserCommand userCommand)
         {
-            UpdateQueue.Enqueue(userCommand);
+            UserCommandQueue.Enqueue(userCommand);
         }
     }
 }
