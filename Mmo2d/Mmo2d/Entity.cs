@@ -37,13 +37,13 @@ namespace Mmo2d
 
         [JsonIgnore]
         public int Hits { get; set; }
-
+        
         [JsonIgnore]
-        public List<Action> UnstagedChanges { get; set; }
+        public EntityController EntityController { get; set; }
 
         public Entity()
         {
-            UnstagedChanges = new List<Action>();
+            EntityController = new EntityController();
         }
 
         public Entity(Vector2 location) : this()
@@ -85,25 +85,9 @@ namespace Mmo2d
             GL.Disable(EnableCap.Blend);
         }
 
-        public void InputHandler(UserCommand serverUpdatePacket)
+        public void InputHandler(UserCommand userCommand)
         {
-            if (serverUpdatePacket.KeyEventArgs != null)
-            {
-                HandleKeyEventArgs(serverUpdatePacket.KeyEventArgs);
-            }
-
-            if (serverUpdatePacket.MousePressed != null)
-            {
-                UnstagedChanges.Add(() =>
-                {
-                    AttackKeyDown = serverUpdatePacket.MousePressed.Value;
-
-                    if (serverUpdatePacket.MousePressed.Value)
-                    {
-                        InitiateAttack();
-                    }
-                });
-            }
+            EntityController = EntityController.ApplyUserCommand(userCommand);
         }
 
         private void InitiateAttack()
@@ -114,50 +98,14 @@ namespace Mmo2d
             }
         }
 
-        private void HandleKeyEventArgs(KeyEventArgs keyEventArgs)
-        {
-            if (keyEventArgs.Key == Key.W)
-            {
-                UnstagedChanges.Add(() => { MoveUpKeyDown = keyEventArgs.KeyDown; });
-            }
-            else if (keyEventArgs.Key == Key.S)
-            {
-                UnstagedChanges.Add(() => { MoveDownKeyDown = keyEventArgs.KeyDown; });
-            }
-            else if (keyEventArgs.Key == Key.D)
-            {
-                UnstagedChanges.Add(() => { MoveRightKeyDown = keyEventArgs.KeyDown; });
-            }
-            else if (keyEventArgs.Key == Key.A)
-            {
-                UnstagedChanges.Add(() => { MoveLeftKeyDown = keyEventArgs.KeyDown; });
-            }
-            else if (keyEventArgs.Key != null && keyEventArgs.Key == Key.Space)
-            {
-                if (keyEventArgs.IsRepeat == false && TimeSinceJump == null)
-                {
-                    UnstagedChanges.Add(() => { TimeSinceJump = (keyEventArgs.KeyDown ? TimeSpan.Zero : (TimeSpan?)null); });
-                }
-            }
-        }
-
-        [JsonIgnore]
-        public bool MoveUpKeyDown { get; set; }
-        [JsonIgnore]
-        public bool MoveDownKeyDown { get; set; }
-        [JsonIgnore]
-        public bool MoveLeftKeyDown { get; set; }
-        [JsonIgnore]
-        public bool MoveRightKeyDown { get; set; }
-        [JsonIgnore]
-        public bool AttackKeyDown { get; set; }
-
         public void Update(TimeSpan delta, IEnumerable<Entity> entities)
         {
-            UnstagedChanges.ForEach(uc => uc.Invoke());
-            UnstagedChanges.Clear();
+            if (EntityController.JumpAtAll && TimeSinceJump == null)
+            {
+                TimeSinceJump = TimeSpan.Zero;
+            }
 
-            if (AttackKeyDown && SwordEquipped)
+            if ((EntityController.Attack || EntityController.AttackAtAll) && SwordEquipped)
             {
                 InitiateAttack();
             }
@@ -199,30 +147,31 @@ namespace Mmo2d
             }
 
             IncrementPosition();
+            EntityController.Update();
         }
 
         public void IncrementPosition()
         {
             var displacementVector = Vector2.Zero;
 
-            if (MoveUpKeyDown)
+            if (EntityController.MoveUp || EntityController.MoveUpAtAll)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(Vector2.UnitY, 0.644f));
             }
 
-            if (MoveDownKeyDown)
+            if (EntityController.MoveDown || EntityController.MoveDownAtAll)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(-Vector2.UnitY, 0.644f));
             }
 
-            if (MoveRightKeyDown)
-            {
-                displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
-            }
-
-            if (MoveLeftKeyDown)
+            if (EntityController.MoveLeft || EntityController.MoveLeftAtAll)
             {
                 displacementVector = Vector2.Add(displacementVector, -Vector2.UnitX);
+            }
+
+            if (EntityController.MoveRight || EntityController.MoveRightAtAll)
+            {
+                displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
             }
 
             if (displacementVector != Vector2.Zero)

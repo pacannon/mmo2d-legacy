@@ -11,7 +11,5 @@ namespace Mmo2d.UserCommands
         public bool KeyDown { get { return !KeyUp; } }
 
         public Key Key { get; set; }
-
-        public bool IsRepeat { get;  set; }
     }
 }

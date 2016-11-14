@@ -61,7 +61,7 @@
     <Compile Include="IServer.cs" />
     <Compile Include="ClientServer.cs" />
     <Compile Include="JsonSerializer.cs" />
-    <Compile Include="PlayerInput.cs" />
+    <Compile Include="EntityController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HostServer.cs" />
