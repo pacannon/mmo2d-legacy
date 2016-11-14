@@ -30,7 +30,7 @@ namespace Mmo2d
             Random = new Random();
         }
 
-        public void Update(TimeSpan delta, List<Entity> entities)
+        public List<Entity> Update(TimeSpan delta, List<Entity> entities)
         { 
             TimeSinceLastGoblinAddition += delta;
 
@@ -57,10 +57,13 @@ namespace Mmo2d
                 newlySpawnedGoblin.Location = randomPostion;
 
                 TimeSinceLastGoblinAddition = TimeSpan.Zero;
-
-                entities.Add(newlySpawnedGoblin);
+                
                 SpawnedGoblins.Add(newlySpawnedGoblin);
+
+                return new List <Entity> { newlySpawnedGoblin };
             }
+
+            return new List<Entity>();
         }
     }
 }

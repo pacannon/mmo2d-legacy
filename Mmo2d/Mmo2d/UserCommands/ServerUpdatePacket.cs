@@ -10,6 +10,10 @@ namespace Mmo2d.UserCommands
         public KeyEventArgs KeyEventArgs { get; set; }
         public bool? MousePressed { get; set; }
 
+        // Not accepting this from the wire...
+        [JsonIgnore]
+        public Entity CreateEntity { get; internal set; }
+
         public override string ToString()
         {
             return JsonSerializer.Serialize(this);

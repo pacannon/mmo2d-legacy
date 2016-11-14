@@ -11,6 +11,6 @@ namespace Mmo2d
     public interface IServer
     {
         void QueueUserCommand(UserCommand userCommand);
-        ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; }
+        ConcurrentQueue<AuthoritativePacket> AuthoritativePacketQueue { get; }
     }
 }

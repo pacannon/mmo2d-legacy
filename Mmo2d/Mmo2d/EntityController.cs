@@ -4,6 +4,7 @@ namespace Mmo2d
 {
     public class EntityController
     {
+        //todo: Consider using progressive and past verb tenses
         public bool MoveUp { get; set; }
         public bool MoveUpAtAll { get; set; }
 
@@ -20,7 +21,7 @@ namespace Mmo2d
         public bool AttackAtAll { get; set; }
 
         public bool Jump { get; set; }
-        public bool JumpAtAll { get; set; }
+        public bool JumpedAtAll { get; set; }
 
         public EntityController ApplyUserCommand(UserCommand userCommand)
         {
@@ -72,7 +73,7 @@ namespace Mmo2d
 
                         if (keyEventArgs.KeyDown)
                         {
-                            clone.JumpAtAll = true;
+                            clone.JumpedAtAll = true;
                         }
                         clone.Jump = keyEventArgs.KeyDown;
                         break;
@@ -99,7 +100,7 @@ namespace Mmo2d
             MoveLeftAtAll = false;
             MoveRightAtAll = false;
             AttackAtAll = false;
-            JumpAtAll = false;
+            JumpedAtAll = false;
         }
     }
 }
