@@ -41,62 +41,63 @@ namespace Mmo2d
 
             NetClient = new NetClient(config);
 
-
             var t = new Task(() =>
             {
                 NetClient.Start();
                 NetOutgoingMessage hail = NetClient.CreateMessage("This is the hail message");
                 NetClient.Connect(hostIpAddress, HostServer.Port, hail);
 
-
                 NetIncomingMessage im;
 
                 try {
+
                     while (NetClient.MessageReceivedEvent.WaitOne())
                     {
-                        im = NetClient.ReadMessage();
-                        // handle incoming message
-                        switch (im.MessageType)
+                        while ((im = NetClient.ReadMessage()) != null)
                         {
-                            case NetIncomingMessageType.DebugMessage:
-                            case NetIncomingMessageType.ErrorMessage:
-                            case NetIncomingMessageType.WarningMessage:
-                            case NetIncomingMessageType.VerboseDebugMessage:
-                                string text = im.ReadString();
-                                Console.WriteLine(text);
-                                break;
-                            case NetIncomingMessageType.StatusChanged:
-                                NetConnectionStatus status = (NetConnectionStatus)im.ReadByte();
+                            // handle incoming message
+                            switch (im.MessageType)
+                            {
+                                case NetIncomingMessageType.DebugMessage:
+                                case NetIncomingMessageType.ErrorMessage:
+                                case NetIncomingMessageType.WarningMessage:
+                                case NetIncomingMessageType.VerboseDebugMessage:
+                                    string text = im.ReadString();
+                                    Console.WriteLine(text);
+                                    break;
+                                case NetIncomingMessageType.StatusChanged:
+                                    NetConnectionStatus status = (NetConnectionStatus)im.ReadByte();
 
-                                if (status == NetConnectionStatus.Connected) { }
-                                //s_form.EnableInput();
-                                else
-                                //s_form.DisableInput();
+                                    if (status == NetConnectionStatus.Connected) { }
+                                    //s_form.EnableInput();
+                                    else
+                                    //s_form.DisableInput();
 
-                                if (status == NetConnectionStatus.Disconnected) { }
+                                    if (status == NetConnectionStatus.Disconnected) { }
                                     //s_form.button2.Text = "Connect";
 
                                     string reason = im.ReadString();
-                                Console.WriteLine(status.ToString() + ": " + reason);
+                                    Console.WriteLine(status.ToString() + ": " + reason);
 
-                                if (status == NetConnectionStatus.Connected)
-                                {
-                                    StartCommandPacketTask();
-                                }
+                                    if (status == NetConnectionStatus.Connected)
+                                    {
+                                        StartCommandPacketTask();
+                                    }
 
-                                break;
-                            case NetIncomingMessageType.Data:
-                                string serializedAuthoritativePacket = im.ReadString();
+                                    break;
+                                case NetIncomingMessageType.Data:
+                                    string serializedAuthoritativePacket = im.ReadString();
 
-                                AuthoritativePacket authoritativePacket = JsonSerializer.Deserialize<AuthoritativePacket>(serializedAuthoritativePacket);
+                                    AuthoritativePacket authoritativePacket = JsonSerializer.Deserialize<AuthoritativePacket>(serializedAuthoritativePacket);
 
-                                ResponseQueue.Enqueue(authoritativePacket);
-                                break;
-                            default:
-                                Console.WriteLine("Unhandled type: " + im.MessageType + " " + im.LengthBytes + " bytes");
-                                break;
+                                    ResponseQueue.Enqueue(authoritativePacket);
+                                    break;
+                                default:
+                                    Console.WriteLine("Unhandled type: " + im.MessageType + " " + im.LengthBytes + " bytes");
+                                    break;
+                            }
+                            NetClient.Recycle(im);
                         }
-                        NetClient.Recycle(im);
                     }
                 }
 
@@ -157,7 +158,7 @@ namespace Mmo2d
             NetOutgoingMessage netOutGoindMessage = NetClient.CreateMessage(serializedMessage);
             NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableOrdered);
 
-            Console.WriteLine(serializedMessage);
+            //Console.WriteLine(serializedMessage);
         }
 
         public void QueueUserCommand(UserCommand userCommand)
