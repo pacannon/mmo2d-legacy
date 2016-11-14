@@ -6,7 +6,7 @@ using OpenTK.Input;
 using System.Net;
 using Mmo2d;
 using Mmo2d.AuthoritativePackets;
-using Mmo2d.ServerUpdatePackets;
+using Mmo2d.UserCommands;
 using System.Linq;
 using Mmo2d.Textures;
 
@@ -103,22 +103,22 @@ namespace Example
 
                 game.KeyDown += (sender, e) =>
                 {
-                    Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, IsRepeat = e.IsRepeat, }, });
+                    Server.QueueUserCommand(new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, IsRepeat = e.IsRepeat, }, });
                 };
 
                 game.KeyUp += (sender, e) =>
                 {
-                    Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, IsRepeat = e.IsRepeat,}, });
+                    Server.QueueUserCommand(new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, IsRepeat = e.IsRepeat,}, });
                 };
 
                 game.MouseDown += (sender, e) =>
                 {
-                    Server.SendMessage(new ServerUpdatePacket() { MousePressed = e.IsPressed, });
+                    Server.QueueUserCommand(new UserCommand() { MousePressed = e.IsPressed, });
                 };
 
                 game.MouseUp += (sender, e) =>
                 {
-                    Server.SendMessage(new ServerUpdatePacket() { MousePressed = e.IsPressed, });
+                    Server.QueueUserCommand(new UserCommand() { MousePressed = e.IsPressed, });
                 };
 
                 // Run the game at 60 updates per second

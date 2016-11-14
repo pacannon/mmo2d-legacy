@@ -70,8 +70,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ServerUpdatePackets\KeyEventArgs.cs" />
-    <Compile Include="ServerUpdatePackets\ServerUpdatePacket.cs" />
+    <Compile Include="UserCommands\KeyEventArgs.cs" />
+    <Compile Include="UserCommands\ServerUpdatePacket.cs" />
     <Compile Include="AuthoritativePackets\AuthoritativePacket.cs" />
     <Compile Include="ShouldSerializeContractResolver.cs" />
     <Compile Include="GameState.cs" />

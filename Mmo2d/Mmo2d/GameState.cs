@@ -44,7 +44,10 @@ namespace Mmo2d
 
             Entities.RemoveAll(e => e.TimeSinceDeath != null);
 
-            GoblinSpawner.Update(delta, Entities);
+            if (GoblinSpawner != null)
+            {
+                GoblinSpawner.Update(delta, Entities);
+            }
         }
 
         public GameState Clone()

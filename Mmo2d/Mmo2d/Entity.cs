@@ -5,7 +5,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Drawing;
-using Mmo2d.ServerUpdatePackets;
+using Mmo2d.UserCommands;
 using Newtonsoft.Json;
 
 namespace Mmo2d
@@ -22,14 +22,14 @@ namespace Mmo2d
         public const float HalfAcceration = -2.81f / 2.0f;
 
         public static readonly Color GoblinColor = Color.Green;
-        public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(100.0);
+        public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(500.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
         public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
 
         public long Id { get; set; }        
         public Vector2 Location { get; set; }
         public Color? OverriddenColor { get; set; }
-        public TimeSpan? TimeSinceAttack { get; set; }
+        public TimeSpan? TimeSinceAttackInitiated { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
         public int Kills { get; set; }
@@ -57,7 +57,7 @@ namespace Mmo2d
 
             RenderSprite(Row, Column);
 
-            if (SwordEquipped && TimeSinceAttack != null)
+            if (SwordEquipped && TimeSinceAttackInitiated != null)
             {
                 RenderSprite(6, 43);
             }
@@ -85,7 +85,7 @@ namespace Mmo2d
             GL.Disable(EnableCap.Blend);
         }
 
-        public void InputHandler(ServerUpdatePacket serverUpdatePacket)
+        public void InputHandler(UserCommand serverUpdatePacket)
         {
             if (serverUpdatePacket.KeyEventArgs != null)
             {
@@ -94,7 +94,23 @@ namespace Mmo2d
 
             if (serverUpdatePacket.MousePressed != null)
             {
-                UnstagedChanges.Add(() => { AttackKeyDown = serverUpdatePacket.MousePressed.Value; });
+                UnstagedChanges.Add(() =>
+                {
+                    AttackKeyDown = serverUpdatePacket.MousePressed.Value;
+
+                    if (serverUpdatePacket.MousePressed.Value)
+                    {
+                        InitiateAttack();
+                    }
+                });
+            }
+        }
+
+        private void InitiateAttack()
+        {
+            if (TimeSinceAttackInitiated == null && SwordEquipped)
+            {
+                TimeSinceAttackInitiated = TimeSpan.Zero;
             }
         }
 
@@ -141,27 +157,29 @@ namespace Mmo2d
             UnstagedChanges.ForEach(uc => uc.Invoke());
             UnstagedChanges.Clear();
 
-            if (TimeSinceAttack != null)
+            if (AttackKeyDown && SwordEquipped)
             {
-                if (TimeSinceAttack == TimeSpan.Zero)
-                {
-                    foreach (var attackedEntity in entities.Where(e => Attacking(e)))
-                    {
-                        attackedEntity.Hits++;
+                InitiateAttack();
+            }
 
-                        if (attackedEntity.Hits >= 1)
-                        {
-                            attackedEntity.TimeSinceDeath = TimeSpan.Zero;
-                            Kills++;
-                        }
+            if (TimeSinceAttackInitiated != null)
+            {
+                foreach (var attackedEntity in entities.Where(e => Attacking(e)))
+                {
+                    attackedEntity.Hits++;
+
+                    if (attackedEntity.Hits >= 1)
+                    {
+                        attackedEntity.TimeSinceDeath = TimeSpan.Zero;
+                        Kills++;
                     }
                 }
 
-                TimeSinceAttack += delta;
+                TimeSinceAttackInitiated += delta;
 
-                if (TimeSinceAttack > SwingSwordAnimationDuration)
+                if (TimeSinceAttackInitiated > SwingSwordAnimationDuration)
                 {
-                    TimeSinceAttack = null;
+                    TimeSinceAttackInitiated = null;
                 }
             }
 
@@ -178,11 +196,6 @@ namespace Mmo2d
             if (TimeSinceDeath != null)
             {
                 TimeSinceDeath += delta;
-            }
-
-            if (AttackKeyDown && SwordEquipped)
-            {
-                TimeSinceAttack = TimeSpan.Zero;
             }
 
             IncrementPosition();
@@ -222,7 +235,7 @@ namespace Mmo2d
 
         public bool Attacking(Entity entity)
         {
-            return entity.OverriddenColor == GoblinColor && SwordEquipped && Overlapping(entity) && TimeSinceAttack == TimeSpan.Zero;
+            return entity.OverriddenColor == GoblinColor && SwordEquipped && Overlapping(entity);
         }
 
         public bool Overlapping(Entity entity)

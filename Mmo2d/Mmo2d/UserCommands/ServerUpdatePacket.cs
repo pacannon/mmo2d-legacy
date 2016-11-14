@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 
-namespace Mmo2d.ServerUpdatePackets
+namespace Mmo2d.UserCommands
 {
-    public class ServerUpdatePacket
+    public class UserCommand
     {
+        public static readonly UserCommand NoChange = new UserCommand();
+
         [JsonIgnore]
         public long? PlayerId { get; set; }
 
