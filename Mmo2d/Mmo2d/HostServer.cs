@@ -28,11 +28,12 @@ namespace Mmo2d
         public GameState GameStateClone { get; set; }
 
         public NetServer NetServer { get; set; }
-        public Stopwatch Stopwatch { get; set; }
+
+        public TimeSpan Tickrate { get; set; }
 
         public HostServer()
         {
-            Stopwatch = Stopwatch.StartNew();
+            Tickrate = TimeSpan.FromMilliseconds(15.0);
             GameState = new GameState { GoblinSpawner = new GoblinSpawner(Vector2.Zero) };
 
             NetPeerConfiguration config = new NetPeerConfiguration(ApplicationIdentifier);
@@ -131,9 +132,12 @@ namespace Mmo2d
             var updateStateTask = new Task(() =>
             {
                 TimeSpan lastElapsed = TimeSpan.Zero;
+                var stopwatch = Stopwatch.StartNew();
 
                 while (true)
                 {
+                    var awakened = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
+
                     while (UpdateQueue.Count > 0)
                     {
                         UserCommand packet = null;
@@ -163,14 +167,18 @@ namespace Mmo2d
                         }
                     }
 
-                    var elapsed = TimeSpan.FromMilliseconds(Stopwatch.ElapsedMilliseconds);
+                    var elapsed = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
 
                     GameState.Update(elapsed - lastElapsed);
                     lastElapsed = elapsed;
 
                     GameStateClone = GameState.Clone();
 
-                    Thread.Sleep(TimeSpan.FromMilliseconds(1000.0 / 60.0));
+                    var asleepend = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
+
+                    var sleepFor = Tickrate - (asleepend - awakened);
+
+                    Thread.Sleep(sleepFor.TotalMilliseconds > 0 ? sleepFor : TimeSpan.Zero);
                 }
             });
 
