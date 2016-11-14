@@ -18,14 +18,14 @@ namespace Example
         static IServer AuthoritativeServer { get; set; }
         public static long? IssuedId { get; private set; }
 
-        public static GameState State;
+        public static GameState GameState;
         public static Ui Ui;
         public static TextureLoader TextureLoader;
         
         [STAThread]
         public static void Main()
         {
-            State = new GameState();
+            GameState = new GameState();
             DisplayLogin();
                 
             using (var game = new GameWindow())
@@ -84,16 +84,16 @@ namespace Example
 
                     Entity playerEntity = null;
 
-                    if (State != null)
+                    if (GameState != null)
                     {
-                        playerEntity = State.Entities.FirstOrDefault(en => en.Id == IssuedId);
+                        playerEntity = GameState.Entities.FirstOrDefault(en => en.Id == IssuedId);
 
                         if (playerEntity != null)
                         {
                             GL.Ortho(playerEntity.Location.X - 1.0, playerEntity.Location.X + 1.0, playerEntity.Location.Y - 1.0, playerEntity.Location.Y + 1.0, 0.0, 4.0);
                         }
 
-                        State.Render();
+                        GameState.Render();
                     }
 
                     Ui.Render(playerEntity, game.Width, game.Height);
@@ -138,7 +138,7 @@ namespace Example
 
         private static void ProcessServerData()
         {
-            while (Server.ResponseQueue.Count > 0)
+            while (Server.AuthoritativePacketQueue.Count > 0)
             {
                 AuthoritativePacket packet = null;
 
@@ -148,7 +148,7 @@ namespace Example
                 {
                     try
                     {
-                        dequeueSucceeded = Server.ResponseQueue.TryDequeue(out packet);
+                        dequeueSucceeded = Server.AuthoritativePacketQueue.TryDequeue(out packet);
                     }
 
                     catch (InvalidOperationException)
@@ -164,14 +164,14 @@ namespace Example
                     IssuedId = packet.IdIssuance;
                 }
 
-                if (packet.State != null)
+                if (packet.GameState != null)
                 {
-                    State = packet.State;
+                    GameState = packet.GameState;
                 }
 
-                if (packet != null)
+                if (packet.GameStateDelta != null)
                 {
-                    State = packet.State;
+                    GameState.ApplyUpdates(new[] { packet.GameStateDelta });
                 }
             }
         }

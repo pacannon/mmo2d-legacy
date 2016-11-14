@@ -12,10 +12,6 @@ namespace Mmo2d
         [JsonIgnore]
         public GoblinSpawner GoblinSpawner { get; set; }
 
-        public TimeSpan ElapsedTime { get; set; }
-
-        public int Updates { get; set; }
-
         public GameState()
         {
             Entities = new List<Entity>();
@@ -29,24 +25,49 @@ namespace Mmo2d
             }
         }
 
-        public void Update(TimeSpan delta)
+        public GameStateDelta GenerateUpdate(TimeSpan delta)
         {
-            ElapsedTime += delta;
-
-            Updates++;
+            var gameStateDelta = new GameStateDelta { Delta = delta };
 
             var entitiesCopy = Entities.ToList();
+            var updates = new List<EntityStateUpdate>();
 
             foreach (var entity in entitiesCopy)
             {
-                entity.Update(delta, Entities);
+                var generatedUpdates = entity.GenerateUpdates(delta, Entities);
+
+                updates.AddRange(generatedUpdates);
             }
 
-            Entities.RemoveAll(e => e.TimeSinceDeath != null);
+            gameStateDelta.EntityStateUpdates.AddRange(updates);
+
+            gameStateDelta.EntitiesToRemove.AddRange(entitiesCopy.Where(e => e.TimeSinceDeath != null).Select(e => e.Id));
 
             if (GoblinSpawner != null)
             {
-                GoblinSpawner.Update(delta, Entities);
+                gameStateDelta.EntitiesToAdd.AddRange(GoblinSpawner.Update(delta, Entities));
+            }
+
+            return gameStateDelta;
+        }
+
+        public void ApplyUpdates(IEnumerable<GameStateDelta> updates)
+        {
+            foreach (var update in updates)
+            {
+                if (update.EntityStateUpdates != null)
+                {
+                    var entitiesCopy = Entities.ToList();
+
+                    foreach (var entity in entitiesCopy)
+                    {
+                        entity.ApplyUpdates(update.EntityStateUpdates.Where(u => u.EntityId == entity.Id));
+                    }
+                }
+
+                Entities.RemoveAll(e => update.EntitiesToRemove.Contains(e.Id));
+
+                Entities.AddRange(update.EntitiesToAdd);
             }
         }
 

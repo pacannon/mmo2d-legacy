@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using OpenTK.Input;
 using System.Drawing;
 using Mmo2d.UserCommands;
 using Newtonsoft.Json;
@@ -26,29 +25,26 @@ namespace Mmo2d
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
         public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
 
-        public long Id { get; set; }        
-        public Vector2 Location { get; set; }
+        public long Id { get; set; }
+
         public Color? OverriddenColor { get; set; }
+        public bool SwordEquipped { get; set; }
+
+        public Vector2 Location { get; set; }
         public TimeSpan? TimeSinceAttackInitiated { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
         public int Kills { get; set; }
-        public bool SwordEquipped { get; set; }
+
+        [JsonIgnore]
+        public EntityController EntityController { get; set; }
 
         [JsonIgnore]
         public int Hits { get; set; }
-        
-        [JsonIgnore]
-        public EntityController EntityController { get; set; }
 
         public Entity()
         {
             EntityController = new EntityController();
-        }
-
-        public Entity(Vector2 location) : this()
-        {
-            Location = location;
         }
 
         public void Render()
@@ -90,67 +86,82 @@ namespace Mmo2d
             EntityController = EntityController.ApplyUserCommand(userCommand);
         }
 
-        private void InitiateAttack()
+        public IEnumerable<EntityStateUpdate> GenerateUpdates(TimeSpan delta, IEnumerable<Entity> entities)
         {
-            if (TimeSinceAttackInitiated == null && SwordEquipped)
-            {
-                TimeSinceAttackInitiated = TimeSpan.Zero;
-            }
-        }
+            var updates = new List<EntityStateUpdate>();
+            var generalUpdate = new EntityStateUpdate(Id);
 
-        public void Update(TimeSpan delta, IEnumerable<Entity> entities)
-        {
-            if (EntityController.JumpAtAll && TimeSinceJump == null)
+            if (TimeSinceAttackInitiated != null || ((EntityController.Attack || EntityController.AttackAtAll) && SwordEquipped))
             {
-                TimeSinceJump = TimeSpan.Zero;
-            }
-
-            if ((EntityController.Attack || EntityController.AttackAtAll) && SwordEquipped)
-            {
-                InitiateAttack();
-            }
-
-            if (TimeSinceAttackInitiated != null)
-            {
-                foreach (var attackedEntity in entities.Where(e => Attacking(e)))
+                if (TimeSinceAttackInitiated != null)
                 {
-                    attackedEntity.Hits++;
-
-                    if (attackedEntity.Hits >= 1)
+                    if (TimeSinceAttackInitiated + delta > SwingSwordAnimationDuration)
                     {
-                        attackedEntity.TimeSinceDeath = TimeSpan.Zero;
-                        Kills++;
+                        generalUpdate.NullOutTimeSinceAttackInitiated = true;
+                    }
+
+                    else
+                    {
+                        generalUpdate.TimeSinceAttackInitiatedDelta = delta;
                     }
                 }
 
-                TimeSinceAttackInitiated += delta;
-
-                if (TimeSinceAttackInitiated > SwingSwordAnimationDuration)
+                else
                 {
-                    TimeSinceAttackInitiated = null;
+                    if (TimeSinceAttackInitiated == null && SwordEquipped)
+                    {
+                        generalUpdate.TimeSinceAttackInitiatedDelta = TimeSpan.Zero;
+                    }
+                }
+
+                foreach (var attackedEntity in entities.Where(e => Attacking(e)))
+                {
+                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { HitsDelta = 1 });                    
+                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { TimeSinceDeathDelta = TimeSpan.Zero });
+
+                    if (generalUpdate.KillsDelta == null)
+                    {
+                        generalUpdate.KillsDelta = 0;
+                    }
+
+                    generalUpdate.KillsDelta++;
                 }
             }
 
             if (TimeSinceJump != null)
             {
-                TimeSinceJump += delta;
-
-                if (TimeSinceJump > JumpAnimationDuration)
+                if (TimeSinceJump + delta > JumpAnimationDuration)
                 {
-                    TimeSinceJump = null;
+                    generalUpdate.NullOutTimeSinceJump = true;
                 }
+
+                else
+                {
+                    generalUpdate.TimeSinceJumpDelta = delta;
+                }
+            }
+
+            else if (EntityController.JumpedAtAll)
+            {
+                generalUpdate.TimeSinceJumpDelta = TimeSpan.Zero;
             }
 
             if (TimeSinceDeath != null)
             {
-                TimeSinceDeath += delta;
+                generalUpdate.TimeSinceDeathDelta = delta;
             }
 
-            IncrementPosition();
-            EntityController.Update();
+            generalUpdate.Displacement = IncrementPosition();
+
+            if (generalUpdate.ContainsInformation)
+            {
+                updates.Add(generalUpdate);
+            }
+
+            return updates;
         }
 
-        public void IncrementPosition()
+        public Vector2? IncrementPosition()
         {
             var displacementVector = Vector2.Zero;
 
@@ -178,8 +189,73 @@ namespace Mmo2d
             {
                 displacementVector = Speed * displacementVector.Normalized();
 
-                Location += displacementVector;
+                return displacementVector;
             }
+
+            return null;
+        }
+
+        public void ApplyUpdates(IEnumerable<EntityStateUpdate> updates)
+        {
+            foreach (var update in updates)
+            {
+                if (update.Displacement != null)
+                {
+                    Location += update.Displacement.Value;
+                }
+
+                if (update.TimeSinceDeathDelta != null)
+                {
+                    if (TimeSinceDeath == null)
+                    {
+                        TimeSinceDeath = TimeSpan.Zero;
+                    }
+
+                    TimeSinceDeath += update.TimeSinceDeathDelta.Value;
+                }
+
+                if (update.TimeSinceJumpDelta != null)
+                {
+                    if (TimeSinceJump == null)
+                    {
+                        TimeSinceJump = TimeSpan.Zero;
+                    }
+
+                    TimeSinceJump += update.TimeSinceJumpDelta.Value;
+                }
+
+                if (update.NullOutTimeSinceJump != null)
+                {
+                    TimeSinceJump = null;
+                }
+
+                if (update.TimeSinceAttackInitiatedDelta != null)
+                {
+                    if (TimeSinceAttackInitiated == null)
+                    {
+                        TimeSinceAttackInitiated = TimeSpan.Zero;
+                    }
+
+                    TimeSinceAttackInitiated += update.TimeSinceAttackInitiatedDelta.Value;
+                }
+
+                if (update.NullOutTimeSinceAttackInitiated != null)
+                {
+                    TimeSinceAttackInitiated = null;
+                }
+
+                if (update.KillsDelta != null)
+                {
+                    Kills += update.KillsDelta.Value;
+                }
+
+                if (update.HitsDelta != null)
+                {
+                    Hits += update.HitsDelta.Value;
+                }
+            }
+
+            EntityController.Update();
         }
 
         public bool Attacking(Entity entity)

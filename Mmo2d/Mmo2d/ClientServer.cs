@@ -12,7 +12,7 @@ namespace Mmo2d
     {
         public float CommandRate { get; set; }
 
-        public ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; private set; }
+        public ConcurrentQueue<AuthoritativePacket> AuthoritativePacketQueue { get; private set; }
         public CancellationTokenSource CommanPacketTaskCancellationTokenSource { get; set; }
         
         public ConcurrentQueue<UserCommand> QueuedUserCommands { get; set; }
@@ -30,13 +30,13 @@ namespace Mmo2d
 
             State = new GameState();
 
-            ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
+            AuthoritativePacketQueue = new ConcurrentQueue<AuthoritativePacket>();
 
 
             NetPeerConfiguration config = new NetPeerConfiguration(HostServer.ApplicationIdentifier);
             config.AutoFlushSendQueue = false;
                         
-            //config.SimulatedMinimumLatency = 0.2f;
+            //config.SimulatedMinimumLatency = 0.4f;
             //config.SimulatedLoss = 0.5f;
 
             NetClient = new NetClient(config);
@@ -90,7 +90,8 @@ namespace Mmo2d
 
                                     AuthoritativePacket authoritativePacket = JsonSerializer.Deserialize<AuthoritativePacket>(serializedAuthoritativePacket);
 
-                                    ResponseQueue.Enqueue(authoritativePacket);
+                                    AuthoritativePacketQueue.Enqueue(authoritativePacket);
+                                    Console.WriteLine(serializedAuthoritativePacket);
                                     break;
                                 default:
                                     Console.WriteLine("Unhandled type: " + im.MessageType + " " + im.LengthBytes + " bytes");
