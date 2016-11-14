@@ -29,6 +29,8 @@ namespace Mmo2d
 
             NetPeerConfiguration config = new NetPeerConfiguration(HostServer.ApplicationIdentifier);
             config.AutoFlushSendQueue = false;
+            config.SimulatedMinimumLatency = 0.2f;
+            config.SimulatedLoss = 0.05f;
             NetClient = new NetClient(config);
 
 

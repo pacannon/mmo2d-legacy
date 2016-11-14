@@ -103,22 +103,22 @@ namespace Example
 
                 game.KeyDown += (sender, e) =>
                 {
-                    Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, IsRepeat = e.IsRepeat, }, PlayerId = IssuedId, });
+                    Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, IsRepeat = e.IsRepeat, }, });
                 };
 
                 game.KeyUp += (sender, e) =>
                 {
-                    Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, IsRepeat = e.IsRepeat,}, PlayerId = IssuedId, });
+                    Server.SendMessage(new ServerUpdatePacket() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, IsRepeat = e.IsRepeat,}, });
                 };
 
                 game.MouseDown += (sender, e) =>
                 {
-                    Server.SendMessage(new ServerUpdatePacket() { MousePressed = e.IsPressed, PlayerId = IssuedId, });
+                    Server.SendMessage(new ServerUpdatePacket() { MousePressed = e.IsPressed, });
                 };
 
                 game.MouseUp += (sender, e) =>
                 {
-                    Server.SendMessage(new ServerUpdatePacket() { MousePressed = e.IsPressed, PlayerId = IssuedId, });
+                    Server.SendMessage(new ServerUpdatePacket() { MousePressed = e.IsPressed, });
                 };
 
                 // Run the game at 60 updates per second
