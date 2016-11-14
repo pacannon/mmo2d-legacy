@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using OpenTK.Input;
 
-namespace Mmo2d.ServerUpdatePackets
+namespace Mmo2d.UserCommands
 {
     public class KeyEventArgs
     {

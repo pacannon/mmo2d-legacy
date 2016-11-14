@@ -1,5 +1,5 @@
 ﻿using Mmo2d.AuthoritativePackets;
-using Mmo2d.ServerUpdatePackets;
+using Mmo2d.UserCommands;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace Mmo2d
 {
     public interface IServer
     {
-        void SendMessage(ServerUpdatePacket message);
+        void QueueUserCommand(UserCommand userCommand);
         ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; }
     }
 }

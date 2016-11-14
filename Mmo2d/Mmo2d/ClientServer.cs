@@ -1,12 +1,8 @@
 ﻿using Lidgren.Network;
 using Mmo2d.AuthoritativePackets;
-using Mmo2d.ServerUpdatePackets;
-using Newtonsoft.Json;
+using Mmo2d.UserCommands;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,14 +10,24 @@ namespace Mmo2d
 {
     public class ClientServer : IServer
     {
+        public float CommandRate { get; set; }
+
         public ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; private set; }
+        public CancellationTokenSource CommanPacketTaskCancellationTokenSource { get; set; }
+        
+        public ConcurrentQueue<UserCommand> QueuedUserCommands { get; set; }
 
         public GameState State { get; set; }
 
         public NetClient NetClient { get; set; }
 
+        public Task CommandPacketSendTask { get; set; }
+
         public ClientServer(string hostIpAddress)
         {
+            CommandRate = 30.0f;
+            QueuedUserCommands = new ConcurrentQueue<UserCommand>();
+
             State = new GameState();
 
             ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
@@ -29,8 +35,10 @@ namespace Mmo2d
 
             NetPeerConfiguration config = new NetPeerConfiguration(HostServer.ApplicationIdentifier);
             config.AutoFlushSendQueue = false;
-            config.SimulatedMinimumLatency = 0.2f;
-            config.SimulatedLoss = 0.05f;
+                        
+            //config.SimulatedMinimumLatency = 0.2f;
+            //config.SimulatedLoss = 0.5f;
+
             NetClient = new NetClient(config);
 
 
@@ -71,6 +79,11 @@ namespace Mmo2d
                                     string reason = im.ReadString();
                                 Console.WriteLine(status.ToString() + ": " + reason);
 
+                                if (status == NetConnectionStatus.Connected)
+                                {
+                                    StartCommandPacketTask();
+                                }
+
                                 break;
                             case NetIncomingMessageType.Data:
                                 string serializedAuthoritativePacket = im.ReadString();
@@ -96,12 +109,60 @@ namespace Mmo2d
             t.Start();
         }
 
-        public void SendMessage(ServerUpdatePacket message)
+        private void StartCommandPacketTask()
+        {
+            CommanPacketTaskCancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = CommanPacketTaskCancellationTokenSource.Token;
+
+            CommandPacketSendTask = new Task(() =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    while (QueuedUserCommands.Count > 0)
+                    {
+                        UserCommand userCommand = null;
+
+                        bool dequeueSucceeded = false;
+
+                        do
+                        {
+                            try
+                            {
+                                dequeueSucceeded = QueuedUserCommands.TryDequeue(out userCommand);
+                            }
+
+                            catch (InvalidOperationException)
+                            {
+                                return;
+                            }
+                        }
+
+                        while (!dequeueSucceeded);
+
+                        BundleUserCommand(userCommand);
+                    }
+
+                    NetClient.FlushSendQueue();
+
+                    Thread.Sleep(TimeSpan.FromMilliseconds(1000.0 / CommandRate));
+                }
+            }, cancellationToken);
+
+            CommandPacketSendTask.Start();
+        }
+
+        private void BundleUserCommand(UserCommand message)
         {
             var serializedMessage = message.ToString();
             NetOutgoingMessage netOutGoindMessage = NetClient.CreateMessage(serializedMessage);
             NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableOrdered);
-            NetClient.FlushSendQueue();
+
+            Console.WriteLine(serializedMessage);
+        }
+
+        public void QueueUserCommand(UserCommand userCommand)
+        {
+            QueuedUserCommands.Enqueue(userCommand);
         }
     }
 }

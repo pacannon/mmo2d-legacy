@@ -1,6 +1,6 @@
 ﻿using Lidgren.Network;
 using Mmo2d.AuthoritativePackets;
-using Mmo2d.ServerUpdatePackets;
+using Mmo2d.UserCommands;
 using OpenTK;
 using System;
 using System.Collections.Concurrent;
@@ -19,13 +19,13 @@ namespace Mmo2d
         public CancellationTokenSource ServerResponseListenerCancellationTokenSource { get; set; }
 
         public ConcurrentQueue<AuthoritativePacket> ResponseQueue { get; set; }
-        public ConcurrentQueue<ServerUpdatePacket> UpdateQueue { get; set; }
+        public ConcurrentQueue<UserCommand> UpdateQueue { get; set; }
 
         public const int Port = 11000;
         public const string ApplicationIdentifier = "mmo2d";
 
-        public GameState State { get; set; }
-        public GameState StateClone { get; set; }
+        public GameState GameState { get; set; }
+        public GameState GameStateClone { get; set; }
 
         public NetServer NetServer { get; set; }
         public Stopwatch Stopwatch { get; set; }
@@ -33,7 +33,7 @@ namespace Mmo2d
         public HostServer()
         {
             Stopwatch = Stopwatch.StartNew();
-            State = new GameState { GoblinSpawner = new GoblinSpawner(Vector2.Zero) };
+            GameState = new GameState { GoblinSpawner = new GoblinSpawner(Vector2.Zero) };
 
             NetPeerConfiguration config = new NetPeerConfiguration(ApplicationIdentifier);
             config.MaximumConnections = 100;
@@ -43,7 +43,7 @@ namespace Mmo2d
             NetServer.Start();
 
             ResponseQueue = new ConcurrentQueue<AuthoritativePacket>();
-            UpdateQueue = new ConcurrentQueue<ServerUpdatePacket>();
+            UpdateQueue = new ConcurrentQueue<UserCommand>();
 
             ServerResponseListenerCancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = ServerResponseListenerCancellationTokenSource.Token;
@@ -81,7 +81,7 @@ namespace Mmo2d
                                         //UpdateConnectionsList();
                                         var remoteUniqueIdentifier = im.SenderConnection.RemoteUniqueIdentifier;
 
-                                        State.Entities.Add(new Entity { Id = remoteUniqueIdentifier, SwordEquipped = true });
+                                        GameState.Entities.Add(new Entity { Id = remoteUniqueIdentifier, SwordEquipped = true });
 
                                         NetOutgoingMessage om = NetServer.CreateMessage();
                                         var authoritativePacket = new AuthoritativePacket() { IdIssuance = remoteUniqueIdentifier, };
@@ -96,10 +96,10 @@ namespace Mmo2d
                                     // incoming chat message from a client
                                     string serializedServerUpdatePacket = im.ReadString();
 
-                                    ServerUpdatePacket serverUpdatePacket = JsonSerializer.Deserialize<ServerUpdatePacket>(serializedServerUpdatePacket);
+                                    UserCommand serverUpdatePacket = JsonSerializer.Deserialize<UserCommand>(serializedServerUpdatePacket);
                                     serverUpdatePacket.PlayerId = im.SenderConnection.RemoteUniqueIdentifier;
 
-                                    SendMessage(serverUpdatePacket);
+                                    QueueUserCommand(serverUpdatePacket);
                                 }
                                 break;
                             default:
@@ -118,7 +118,7 @@ namespace Mmo2d
             {
                 while (true)
                 {
-                    var packet = new AuthoritativePacket { State = StateClone, };
+                    var packet = new AuthoritativePacket { State = GameStateClone, };
                     SendToAllClients(packet);
 
                     Thread.Sleep(TimeSpan.FromMilliseconds(1000.0 / 30.0));
@@ -136,7 +136,7 @@ namespace Mmo2d
                 {
                     while (UpdateQueue.Count > 0)
                     {
-                        ServerUpdatePacket packet = null;
+                        UserCommand packet = null;
 
                         bool dequeueSucceeded = false;
 
@@ -155,7 +155,7 @@ namespace Mmo2d
 
                         while (!dequeueSucceeded);
 
-                        var player = State.Entities.Where(e => e.Id == packet.PlayerId).FirstOrDefault();
+                        var player = GameState.Entities.Where(e => e.Id == packet.PlayerId).FirstOrDefault();
 
                         if (player != null)
                         {
@@ -165,10 +165,10 @@ namespace Mmo2d
 
                     var elapsed = TimeSpan.FromMilliseconds(Stopwatch.ElapsedMilliseconds);
 
-                    State.Update(elapsed - lastElapsed);
+                    GameState.Update(elapsed - lastElapsed);
                     lastElapsed = elapsed;
 
-                    StateClone = State.Clone();
+                    GameStateClone = GameState.Clone();
 
                     Thread.Sleep(TimeSpan.FromMilliseconds(1000.0 / 60.0));
                 }
@@ -201,9 +201,9 @@ namespace Mmo2d
             ResponseQueue.Enqueue(packet);
         }
 
-        public void SendMessage(ServerUpdatePacket message)
+        public void QueueUserCommand(UserCommand userCommand)
         {
-            UpdateQueue.Enqueue(message);
+            UpdateQueue.Enqueue(userCommand);
         }
     }
 }
