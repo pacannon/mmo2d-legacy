@@ -57,6 +57,11 @@ namespace Mmo2d
             {
                 RenderSprite(6, 43);
             }
+
+            if (OverriddenColor == Color.Green && RandomFromId() % 100 == 0)
+            {
+                RenderSprite(RandomFromId() % 9, 7 % 9 + 6);
+            }
         }
 
         private void RenderSprite(int row, int column)
@@ -248,6 +253,11 @@ namespace Mmo2d
             return TopEdge > location.Y && BottomEdge < location.Y && LeftEdge < location.X && RightEdge > location.X;
         }
 
+        public int RandomFromId()
+        {
+            return unchecked((int)(Id));
+        }
+
         [JsonIgnore]
         public float LeftEdge { get { return Location.X - Width / 2.0f; } }
         [JsonIgnore]
@@ -279,7 +289,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : ((int)Id) % 6 + 5;
+                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : RandomFromId() % 6 + 5;
             }
         }
 
@@ -288,7 +298,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == Color.Red ? 43 : 0;
+                return OverriddenColor == Color.Red ? 43 : RandomFromId() % 2;
             }
         }
 
