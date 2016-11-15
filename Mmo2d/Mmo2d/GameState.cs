@@ -27,21 +27,21 @@ namespace Mmo2d
 
         public GameStateDelta GenerateUpdate(TimeSpan delta)
         {
-            var gameStateDelta = new GameStateDelta { Delta = delta };
+            var gameStateDelta = new GameStateDelta();
 
             var entitiesCopy = Entities.ToList();
             var updates = new List<EntityStateUpdate>();
 
             foreach (var entity in entitiesCopy)
             {
-                var generatedUpdates = entity.GenerateUpdates(delta, Entities);
+                var generatedUpdates = entity.GenerateUpdates(Entities);
 
                 updates.AddRange(generatedUpdates);
             }
 
             gameStateDelta.EntityStateUpdates.AddRange(updates);
 
-            gameStateDelta.EntitiesToRemove.AddRange(entitiesCopy.Where(e => e.TimeSinceDeath != null).Select(e => e.Id));
+            gameStateDelta.EntitiesToRemove.AddRange(updates.Where(e => e.Died != null).Select(e => e.EntityId));
 
             if (GoblinSpawner != null)
             {
@@ -51,24 +51,19 @@ namespace Mmo2d
             return gameStateDelta;
         }
 
-        public void ApplyUpdates(IEnumerable<GameStateDelta> updates)
+        public void ApplyUpdates(IEnumerable<GameStateDelta> updates, TimeSpan delta)
         {
-            foreach (var update in updates)
+            Entities.AddRange(updates.SelectMany(u => u.EntitiesToAdd));
+
+            var entitiesCopy = Entities.ToList();
+            var entityStateUpdates = updates.SelectMany(u => u.EntityStateUpdates);
+
+            foreach (var entity in entitiesCopy)
             {
-                if (update.EntityStateUpdates != null)
-                {
-                    var entitiesCopy = Entities.ToList();
-
-                    foreach (var entity in entitiesCopy)
-                    {
-                        entity.ApplyUpdates(update.EntityStateUpdates.Where(u => u.EntityId == entity.Id));
-                    }
-                }
-
-                Entities.RemoveAll(e => update.EntitiesToRemove.Contains(e.Id));
-
-                Entities.AddRange(update.EntitiesToAdd);
+                entity.ApplyUpdates(entityStateUpdates.Where(u => u.EntityId == entity.Id), delta);
             }
+
+            Entities.RemoveAll(e => updates.SelectMany(u => u.EntitiesToRemove).Contains(e.Id));
         }
 
         public GameState Clone()

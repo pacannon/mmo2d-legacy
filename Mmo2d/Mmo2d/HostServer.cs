@@ -203,7 +203,7 @@ namespace Mmo2d
 
                     var update = GameState.GenerateUpdate(elapsed - lastElapsed);
                     update.EntitiesToAdd.AddRange(entitiesCreated);
-                    GameState.ApplyUpdates(new[] { update });
+                    GameState.ApplyUpdates(new[] { update }, elapsed - lastElapsed);
 
                     lastElapsed = elapsed;
 
@@ -211,7 +211,7 @@ namespace Mmo2d
 
                     if (update.ContainsInformation)
                     {
-                        AuthoritativePacketQueue.Enqueue(new AuthoritativePacket { GameStateDelta = update });
+                        AuthoritativePacketQueue.Enqueue(new AuthoritativePacket { GameStateDelta = update, });
                     }
 
                     var asleepend = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
