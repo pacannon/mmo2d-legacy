@@ -120,7 +120,7 @@ namespace Mmo2d
                 }
             }
 
-            if (EntityController.JumpedAtAll)
+            if (EntityController.JumpedAtAll && TimeSinceJump == null)
             {
                 generalUpdate.Jumped = true;
             }
