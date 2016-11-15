@@ -60,6 +60,7 @@ namespace Mmo2d
 
             if (OverriddenColor == Color.Green && RandomFromId() % 100 == 0)
             {
+                RenderSprite(RandomFromId() % 4, 3);
                 RenderSprite(RandomFromId() % 9, 7 % 9 + 6);
             }
         }
@@ -255,7 +256,8 @@ namespace Mmo2d
 
         public int RandomFromId()
         {
-            return unchecked((int)(Id));
+            var integer = unchecked((int)(Id));
+            return integer < 0 ? -integer : integer;
         }
 
         [JsonIgnore]
