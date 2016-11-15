@@ -18,6 +18,7 @@ namespace Mmo2d
                     NullValueHandling = NullValueHandling.Ignore,
                     ContractResolver = ShouldSerializeContractResolver.Instance,
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
                 });
 
             return json;

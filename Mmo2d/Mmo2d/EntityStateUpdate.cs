@@ -18,12 +18,10 @@ namespace Mmo2d
         }
 
         public Vector2? Displacement { get; set; }
-        public TimeSpan? TimeSinceDeathDelta { get; set; }
-        public TimeSpan? TimeSinceJumpDelta { get; set; }
-        public TimeSpan? TimeSinceAttackInitiatedDelta { get; set; }
+        public bool? Died { get; set; }
+        public bool? Jumped { get; set; }
+        public bool? AttackInitiated { get; set; }
 
-        public bool? NullOutTimeSinceJump { get; set; }
-        public bool? NullOutTimeSinceAttackInitiated { get; set; }
         public int? HitsDelta { get; set; }
         public int? KillsDelta { get; set; }
 
@@ -32,8 +30,8 @@ namespace Mmo2d
         {
             get
             {
-                return Displacement.HasValue || TimeSinceDeathDelta.HasValue || TimeSinceJumpDelta.HasValue || TimeSinceAttackInitiatedDelta.HasValue ||
-                    NullOutTimeSinceJump.HasValue || NullOutTimeSinceAttackInitiated.HasValue || HitsDelta.HasValue || KillsDelta.HasValue;
+                return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
+                    HitsDelta.HasValue || KillsDelta.HasValue;
             }
         }
     }

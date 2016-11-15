@@ -9,6 +9,7 @@ using Mmo2d.AuthoritativePackets;
 using Mmo2d.UserCommands;
 using System.Linq;
 using Mmo2d.Textures;
+using System.Collections.Generic;
 
 namespace Example
 {
@@ -56,22 +57,12 @@ namespace Example
 
                 game.UpdateFrame += (sender, e) =>
                 {
-                    // add game logic, input handling
                     if (game.Keyboard[Key.Escape])
                     {
                         game.Exit();
                     }
 
-                    /*var keyboardState = Keyboard.GetState();
-
-                    PlayerInput.Update(keyboardState, )
-
-                    if (state[Key.Up])
-                        ; // move up
-                    if (state[Key.Down])
-                        ; // move down*/
-
-                    ProcessServerData();
+                    ProcessServerData(TimeSpan.FromSeconds(e.Time));
                 };
 
                 game.RenderFrame += (sender, e) =>
@@ -136,8 +127,10 @@ namespace Example
             }
         }
 
-        private static void ProcessServerData()
+        private static void ProcessServerData(TimeSpan delta)
         {
+            var gameStateDeltas = new List<GameStateDelta>();
+
             while (Server.AuthoritativePacketQueue.Count > 0)
             {
                 AuthoritativePacket packet = null;
@@ -171,9 +164,11 @@ namespace Example
 
                 if (packet.GameStateDelta != null)
                 {
-                    GameState.ApplyUpdates(new[] { packet.GameStateDelta });
+                    gameStateDeltas.Add(packet.GameStateDelta);
                 }
             }
+
+            GameState.ApplyUpdates(gameStateDeltas, delta);
         }
 
         public static void DisplayLogin()

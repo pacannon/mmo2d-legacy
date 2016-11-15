@@ -86,38 +86,25 @@ namespace Mmo2d
             EntityController = EntityController.ApplyUserCommand(userCommand);
         }
 
-        public IEnumerable<EntityStateUpdate> GenerateUpdates(TimeSpan delta, IEnumerable<Entity> entities)
+        public IEnumerable<EntityStateUpdate> GenerateUpdates(IEnumerable<Entity> entities)
         {
             var updates = new List<EntityStateUpdate>();
             var generalUpdate = new EntityStateUpdate(Id);
 
             if (TimeSinceAttackInitiated != null || ((EntityController.Attack || EntityController.AttackAtAll) && SwordEquipped))
             {
-                if (TimeSinceAttackInitiated != null)
-                {
-                    if (TimeSinceAttackInitiated + delta > SwingSwordAnimationDuration)
-                    {
-                        generalUpdate.NullOutTimeSinceAttackInitiated = true;
-                    }
-
-                    else
-                    {
-                        generalUpdate.TimeSinceAttackInitiatedDelta = delta;
-                    }
-                }
-
-                else
-                {
+                if (TimeSinceAttackInitiated == null)
+                { 
                     if (TimeSinceAttackInitiated == null && SwordEquipped)
                     {
-                        generalUpdate.TimeSinceAttackInitiatedDelta = TimeSpan.Zero;
+                        generalUpdate.AttackInitiated = true;
                     }
                 }
 
                 foreach (var attackedEntity in entities.Where(e => Attacking(e)))
                 {
                     updates.Add(new EntityStateUpdate(attackedEntity.Id) { HitsDelta = 1 });                    
-                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { TimeSinceDeathDelta = TimeSpan.Zero });
+                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { Died = true });
 
                     if (generalUpdate.KillsDelta == null)
                     {
@@ -128,27 +115,14 @@ namespace Mmo2d
                 }
             }
 
-            if (TimeSinceJump != null)
+            if (EntityController.JumpedAtAll)
             {
-                if (TimeSinceJump + delta > JumpAnimationDuration)
-                {
-                    generalUpdate.NullOutTimeSinceJump = true;
-                }
-
-                else
-                {
-                    generalUpdate.TimeSinceJumpDelta = delta;
-                }
-            }
-
-            else if (EntityController.JumpedAtAll)
-            {
-                generalUpdate.TimeSinceJumpDelta = TimeSpan.Zero;
+                generalUpdate.Jumped = true;
             }
 
             if (TimeSinceDeath != null)
             {
-                generalUpdate.TimeSinceDeathDelta = delta;
+                generalUpdate.Died = true;
             }
 
             generalUpdate.Displacement = IncrementPosition();
@@ -195,8 +169,33 @@ namespace Mmo2d
             return null;
         }
 
-        public void ApplyUpdates(IEnumerable<EntityStateUpdate> updates)
+        public void ApplyUpdates(IEnumerable<EntityStateUpdate> updates, TimeSpan delta)
         {
+            if (TimeSinceDeath != null)
+            {
+                TimeSinceDeath += delta;
+            }
+
+            if (TimeSinceJump != null)
+            {
+                TimeSinceJump += delta;
+
+                if (TimeSinceJump > JumpAnimationDuration)
+                {
+                    TimeSinceJump = null;
+                }
+            }
+
+            if (TimeSinceAttackInitiated != null)
+            {
+                TimeSinceAttackInitiated += delta;
+
+                if (TimeSinceAttackInitiated > SwingSwordAnimationDuration)
+                {
+                    TimeSinceAttackInitiated = null;
+                }
+            }
+
             foreach (var update in updates)
             {
                 if (update.Displacement != null)
@@ -204,44 +203,19 @@ namespace Mmo2d
                     Location += update.Displacement.Value;
                 }
 
-                if (update.TimeSinceDeathDelta != null)
+                if (update.Died != null)
                 {
-                    if (TimeSinceDeath == null)
-                    {
-                        TimeSinceDeath = TimeSpan.Zero;
-                    }
-
-                    TimeSinceDeath += update.TimeSinceDeathDelta.Value;
+                    TimeSinceDeath = TimeSpan.Zero;
                 }
 
-                if (update.TimeSinceJumpDelta != null)
+                if (update.Jumped != null)
                 {
-                    if (TimeSinceJump == null)
-                    {
-                        TimeSinceJump = TimeSpan.Zero;
-                    }
-
-                    TimeSinceJump += update.TimeSinceJumpDelta.Value;
+                    TimeSinceJump = TimeSpan.Zero;
                 }
 
-                if (update.NullOutTimeSinceJump != null)
+                if (update.AttackInitiated != null)
                 {
-                    TimeSinceJump = null;
-                }
-
-                if (update.TimeSinceAttackInitiatedDelta != null)
-                {
-                    if (TimeSinceAttackInitiated == null)
-                    {
-                        TimeSinceAttackInitiated = TimeSpan.Zero;
-                    }
-
-                    TimeSinceAttackInitiated += update.TimeSinceAttackInitiatedDelta.Value;
-                }
-
-                if (update.NullOutTimeSinceAttackInitiated != null)
-                {
-                    TimeSinceAttackInitiated = null;
+                    TimeSinceAttackInitiated = TimeSpan.Zero;
                 }
 
                 if (update.KillsDelta != null)
