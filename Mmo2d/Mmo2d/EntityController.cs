@@ -1,4 +1,5 @@
 ﻿using Mmo2d.UserCommands;
+using System;
 
 namespace Mmo2d
 {
@@ -19,6 +20,13 @@ namespace Mmo2d
 
         public bool Attack { get; set; }
         public bool AttackAtAll { get; set; }
+
+        public bool Moving { get { return (MoveUp || MoveDown || MoveLeft || MoveRight); } }
+
+        public void Stop()
+        {
+            MoveUp = MoveDown = MoveLeft = MoveRight = false;
+        }
 
         public bool Jump { get; set; }
         public bool JumpedAtAll { get; set; }
@@ -93,7 +101,7 @@ namespace Mmo2d
             return clone;
         }
 
-        public void Update()
+        public virtual void Update()
         {
             MoveUpAtAll = false;
             MoveDownAtAll = false;
@@ -101,6 +109,42 @@ namespace Mmo2d
             MoveRightAtAll = false;
             AttackAtAll = false;
             JumpedAtAll = false;
+        }
+    }
+
+    public class GoblinEntityController : EntityController
+    {
+        public Random Random { get; set; }
+
+        public GoblinEntityController(Random random)
+        {
+            Random = random;
+        }
+
+        public override void Update()
+        {
+            var randomNumber = Random.Next() % 1;
+
+            if (randomNumber == 0)
+            {
+                randomNumber = Random.Next() % 4;
+
+                switch (randomNumber)
+                {
+                    case 0:
+                        MoveUp = !MoveUp;
+                        break;
+                    case 1:
+                        MoveDown = !MoveDown;
+                        break;
+                    case 2:
+                        MoveLeft = !MoveLeft;
+                        break;
+                    case 3:
+                        MoveRight = !MoveRight;
+                        break;
+                }
+            }
         }
     }
 }
