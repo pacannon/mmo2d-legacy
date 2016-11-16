@@ -44,7 +44,7 @@ namespace Mmo2d
 
             if (SpawnedGoblins.Count < MaxGoblins && TimeSinceLastGoblinAddition >= SpawningInterval)
             {
-                var newlySpawnedGoblin = new Entity() { OverriddenColor = Entity.GoblinColor, Id = Random.Next()};
+                var newlySpawnedGoblin = new Entity() { OverriddenColor = Entity.GoblinColor, Id = Random.Next(), /*EntityController = new GoblinEntityController(Random),*/ };
 
                 var randomAngle = Random.NextDouble() * Math.PI * 2.0;
                 var randomRadius = Random.NextDouble() * SpawningRadius;
