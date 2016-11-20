@@ -162,7 +162,7 @@ namespace Example
                     GameState = packet.GameState;
                 }
 
-                if (packet.GameStateDelta != null)
+                else if (packet.GameStateDelta != null)
                 {
                     gameStateDeltas.Add(packet.GameStateDelta);
                 }
