@@ -25,7 +25,7 @@ namespace Mmo2d
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(500.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
-        public static readonly TimeSpan CastFireballCooldown = TimeSpan.FromMilliseconds(2000.0);
+        public static readonly TimeSpan CastFireballCooldown = TimeSpan.FromMilliseconds(200.0);
         public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
 
         public long Id { get; set; }
@@ -132,15 +132,23 @@ namespace Mmo2d
                 generalUpdate.Jumped = true;
             }
 
-            if (EntityController[EntityController.States.CastFireball].ToggledOn && TimeSinceCastFireball == null)
+            if (EntityController[EntityController.States.CastFireball].On && TimeSinceCastFireball == null)
             {
                 generalUpdate.CastFireball = true;
-                
-                var target = entities.Where(e => e.OverriddenColor == GoblinColor).OrderBy(e => (e.Location - Location).Length).FirstOrDefault();
+
+                //var target = entities.Where(e => e.OverriddenColor == GoblinColor).OrderBy(e => (e.Location - Location).Length).FirstOrDefault();
+
+                var targets = entities.Where(e => e.OverriddenColor == GoblinColor);
+                Entity target = null;
+
+                if (targets.Count() > 0)
+                {
+                    target = targets.ElementAt(random.Next() % targets.Count());
+                }
 
                 if (target != null)
                 {
-                    updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, target.Id, random.Next()) });
+                    updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, target.Id, random.Next(), Id) });
                 }
             }
             

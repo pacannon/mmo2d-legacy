@@ -32,12 +32,13 @@ namespace Mmo2d.Entities
         [JsonIgnore]
         public Vector2 TopRightCorner { get { return new Vector2(RightEdge, TopEdge); } }
 
-        public Fireball(Vector2 location, long targetId, long id)
+        public Fireball(Vector2 location, long targetId, long id, long launcherId)
         {
             TargetId = targetId;
             Location = location;
             Age = TimeSpan.Zero;
             Id = id;
+            LauncherId = launcherId;
         }
 
         public void Render()
@@ -68,7 +69,7 @@ namespace Mmo2d.Entities
         {
             var updates = new List<EntityStateUpdate>();
 
-            var nextLocation = NewLocation(delta, entities);
+            var nextLocation = NextLocation(delta, entities);
 
             if (nextLocation != null)
             {
@@ -78,7 +79,13 @@ namespace Mmo2d.Entities
                 {
                     updates.Add(new EntityStateUpdate(targetEntity.Id) { Died = true, });
                     updates.Add(new EntityStateUpdate(Id) { RemoveFireball = true, });
+                    updates.Add(new EntityStateUpdate(LauncherId) { KillsDelta = 1, });
                 }
+            }
+
+            else
+            {
+                updates.Add(new EntityStateUpdate(Id) { RemoveFireball = true, });
             }
 
             return updates;
@@ -86,9 +93,12 @@ namespace Mmo2d.Entities
 
         public void ApplyUpdate(TimeSpan delta, IEnumerable<Entity> entities) 
         {
-            var nextLocation = NewLocation(delta, entities);
+            var nextLocation = NextLocation(delta, entities);
 
-            Location = nextLocation.Value;
+            if (nextLocation != null)
+            {
+                Location = nextLocation.Value;
+            }
 
             Age += delta;
         }
@@ -96,19 +106,20 @@ namespace Mmo2d.Entities
         public long Id { get; set; }
         public Vector2 Location { get; set; }
         public long TargetId { get; set; }
+        public long LauncherId { get; set; }
         public TimeSpan Age { get; set; }
 
-        public Vector2? NewLocation(TimeSpan delta, IEnumerable<Entity> entities)
+        public Vector2? NextLocation(TimeSpan delta, IEnumerable<Entity> entities)
         {
             var targetEntity = TargetEntity(entities);
 
             if (targetEntity != null)
             {
-                var t_squared = (0.01f) * ((float)Age.TotalSeconds * (float)Age.TotalSeconds);
+                var t_squared = (0.03f) * ((float)Age.TotalSeconds * (float)Age.TotalSeconds);
 
                 var direction = (targetEntity.Location - Location).Normalized();
 
-                var newLocation = Location + Vector2.Multiply(direction, t_squared);
+                var newLocation = Location + Vector2.Multiply(direction, 0.01f) + Vector2.Multiply(direction, t_squared);
 
                 return newLocation;
             }
