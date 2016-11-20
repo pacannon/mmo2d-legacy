@@ -55,6 +55,8 @@ namespace Mmo2d
             GL.LoadIdentity();
             GL.Ortho(0, gameWidth, gameHeight, 0, 0, 1);
 
+            GL.Color3(Color.Transparent);
+
             GL.Begin(PrimitiveType.Quads);
 
             float u_step = (float)Settings.GlyphWidth / (float)TextureWidth;

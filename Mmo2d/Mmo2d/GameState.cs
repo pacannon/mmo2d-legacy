@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Mmo2d.Entities;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +9,19 @@ namespace Mmo2d
     public class GameState
     {
         public List<Entity> Entities { get; set; }
+        public List<Fireball> Fireballs { get; set; }
+
+        [JsonIgnore]
+        public Random Random { get; set; }
 
         [JsonIgnore]
         public GoblinSpawner GoblinSpawner { get; set; }
 
-        public GameState()
+        public GameState(Random random)
         {
             Entities = new List<Entity>();
+            Fireballs = new List<Fireball>();
+            Random = random;
         }
 
         public void Render()
@@ -22,6 +29,11 @@ namespace Mmo2d
             foreach (var entity in Entities)
             {
                 entity.Render();
+            }
+
+            foreach (var fireball in Fireballs)
+            {
+                fireball.Render();
             }
         }
 
@@ -34,12 +46,16 @@ namespace Mmo2d
 
             foreach (var entity in entitiesCopy)
             {
-                var generatedUpdates = entity.GenerateUpdates(Entities);
+                var generatedUpdates = entity.GenerateUpdates(Entities, Random);
 
                 updates.AddRange(generatedUpdates);
             }
 
-            gameStateDelta.EntityStateUpdates.AddRange(updates);
+            foreach (var fireball in Fireballs)
+            {
+                var generatedupdates = fireball.GenerateUpdates(delta, entitiesCopy);
+                updates.AddRange(generatedupdates);
+            }
 
             gameStateDelta.EntitiesToRemove.AddRange(updates.Where(e => e.Died != null).Select(e => e.EntityId));
 
@@ -47,6 +63,8 @@ namespace Mmo2d
             {
                 gameStateDelta.EntitiesToAdd.AddRange(GoblinSpawner.Update(delta, Entities));
             }
+            
+            gameStateDelta.EntityStateUpdates.AddRange(updates);
 
             return gameStateDelta;
         }
@@ -63,7 +81,24 @@ namespace Mmo2d
                 entity.ApplyUpdates(entityStateUpdates.Where(u => u.EntityId == entity.Id), delta);
             }
 
-            Entities.RemoveAll(e => updates.SelectMany(u => u.EntitiesToRemove).Contains(e.Id));
+            foreach (var newFireball in entityStateUpdates.Where(u => u.AddFireball != null).Select(u => u.AddFireball))
+            {
+                Fireballs.Add(newFireball);
+            }
+
+            foreach (var fireball in Fireballs)
+            {
+                fireball.ApplyUpdate(delta, entitiesCopy);
+            }
+
+            foreach (var removeId in entityStateUpdates.Where(u => u.RemoveFireball != null))
+            {
+                Fireballs.RemoveAll(f => f.Id == removeId.EntityId);
+            }
+
+            var removed = Entities.RemoveAll(e => updates.SelectMany(u => u.EntitiesToRemove).Contains(e.Id));
+
+
         }
 
         public GameState Clone()

@@ -7,6 +7,7 @@ using System.Drawing;
 using Mmo2d.UserCommands;
 using Mmo2d.Controller;
 using Newtonsoft.Json;
+using Mmo2d.Entities;
 
 namespace Mmo2d
 {
@@ -24,7 +25,7 @@ namespace Mmo2d
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(500.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
-        public static readonly TimeSpan CastFireballAnimationDuration = TimeSpan.FromMilliseconds(2000.0);
+        public static readonly TimeSpan CastFireballCooldown = TimeSpan.FromMilliseconds(2000.0);
         public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
 
         public long Id { get; set; }
@@ -37,6 +38,7 @@ namespace Mmo2d
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
         public TimeSpan? TimeSinceCastFireball { get; set; }
+        public Fireball Fireball { get; set; }
 
         public int Kills { get; set; }
 
@@ -96,7 +98,7 @@ namespace Mmo2d
             EntityController = EntityController.ApplyUserCommand(userCommand);
         }
 
-        public IEnumerable<EntityStateUpdate> GenerateUpdates(IEnumerable<Entity> entities)
+        public IEnumerable<EntityStateUpdate> GenerateUpdates(IEnumerable<Entity> entities, Random random)
         {
             var updates = new List<EntityStateUpdate>();
             var generalUpdate = new EntityStateUpdate(Id);
@@ -113,7 +115,7 @@ namespace Mmo2d
 
                 foreach (var attackedEntity in entities.Where(e => Attacking(e)))
                 {
-                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { HitsDelta = 1 });                    
+                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { HitsDelta = 1 });           
                     updates.Add(new EntityStateUpdate(attackedEntity.Id) { Died = true });
 
                     if (generalUpdate.KillsDelta == null)
@@ -133,16 +135,15 @@ namespace Mmo2d
             if (EntityController[EntityController.States.CastFireball].ToggledOn && TimeSinceCastFireball == null)
             {
                 generalUpdate.CastFireball = true;
-
+                
                 var target = entities.Where(e => e.OverriddenColor == GoblinColor).OrderBy(e => (e.Location - Location).Length).FirstOrDefault();
 
                 if (target != null)
                 {
-                    updates.Add(new EntityStateUpdate(target.Id) { HitsDelta = 1 });
-                    updates.Add(new EntityStateUpdate(target.Id) { Died = true });
+                    updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, target.Id, random.Next()) });
                 }
             }
-
+            
             if (TimeSinceDeath != null)
             {
                 generalUpdate.Died = true;
@@ -223,7 +224,7 @@ namespace Mmo2d
             {
                 TimeSinceCastFireball += delta;
 
-                if (TimeSinceCastFireball > CastFireballAnimationDuration)
+                if (TimeSinceCastFireball > CastFireballCooldown)
                 {
                     TimeSinceCastFireball = null;
                 }

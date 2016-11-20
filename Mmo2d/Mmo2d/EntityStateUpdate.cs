@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Mmo2d.Entities;
+using Newtonsoft.Json;
 using OpenTK;
 
 namespace Mmo2d
@@ -24,6 +25,9 @@ namespace Mmo2d
 
         public int? HitsDelta { get; set; }
         public int? KillsDelta { get; set; }
+        public Fireball AddFireball { get; set; }
+
+        public bool? RemoveFireball { get; set; }
 
         [JsonIgnore]
         public bool ContainsInformation
@@ -31,7 +35,7 @@ namespace Mmo2d
             get
             {
                 return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
-                    HitsDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue;
+                    HitsDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue || AddFireball != null || RemoveFireball.HasValue;
             }
         }
     }

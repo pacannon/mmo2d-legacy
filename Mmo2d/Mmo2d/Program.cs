@@ -26,7 +26,7 @@ namespace Example
         [STAThread]
         public static void Main()
         {
-            GameState = new GameState();
+            GameState = new GameState(null);
             DisplayLogin();
                 
             using (var game = new GameWindow())

@@ -34,7 +34,8 @@ namespace Mmo2d
         public HostServer()
         {
             Tickrate = TimeSpan.FromMilliseconds(15.0);
-            GameState = new GameState { GoblinSpawner = new GoblinSpawner(Vector2.Zero) };
+            var random = new Random();
+            GameState = new GameState(random) { GoblinSpawner = new GoblinSpawner(Vector2.Zero, random) };
 
             NetPeerConfiguration config = new NetPeerConfiguration(ApplicationIdentifier);
             config.MaximumConnections = 100;

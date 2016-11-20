@@ -28,7 +28,7 @@ namespace Mmo2d
             CommandRate = 30.0f;
             QueuedUserCommands = new ConcurrentQueue<UserCommand>();
 
-            State = new GameState();
+            State = new GameState(null);
 
             AuthoritativePacketQueue = new ConcurrentQueue<AuthoritativePacket>();
 

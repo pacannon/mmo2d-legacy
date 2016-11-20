@@ -21,13 +21,13 @@ namespace Mmo2d
         [JsonIgnore]
         public Random Random { get; set; }
 
-        public GoblinSpawner(Vector2 position)
+        public GoblinSpawner(Vector2 position, Random random)
         {
             SpawnedGoblins = new List<Entity>();
             X = position.X;
             Y = position.Y;
             TimeSinceLastGoblinAddition = TimeSpan.Zero;
-            Random = new Random();
+            Random = random;
         }
 
         public List<Entity> Update(TimeSpan delta, List<Entity> entities)
