@@ -160,6 +160,8 @@ namespace Mmo2d
                 TimeSpan lastElapsed = TimeSpan.Zero;
                 var stopwatch = Stopwatch.StartNew();
 
+                int sent = 0;
+
                 while (true)
                 {
                     var awakened = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
@@ -211,7 +213,7 @@ namespace Mmo2d
 
                     if (update.ContainsInformation)
                     {
-                        AuthoritativePacketQueue.Enqueue(new AuthoritativePacket { GameStateDelta = update, });
+                        AuthoritativePacketQueue.Enqueue(new AuthoritativePacket { GameStateDelta = update, GameState = (sent % 1000 == 0 ? GameStateClone : null), });
                     }
 
                     var asleepend = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
@@ -219,6 +221,7 @@ namespace Mmo2d
                     var sleepFor = Tickrate - (asleepend - awakened);
 
                     Thread.Sleep(sleepFor.TotalMilliseconds > 0 ? sleepFor : TimeSpan.Zero);
+                    sent++;
                 }
             });
 
