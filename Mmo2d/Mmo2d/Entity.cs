@@ -5,6 +5,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing;
 using Mmo2d.UserCommands;
+using Mmo2d.Controller;
 using Newtonsoft.Json;
 
 namespace Mmo2d
@@ -23,6 +24,7 @@ namespace Mmo2d
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(500.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
+        public static readonly TimeSpan CastFireballAnimationDuration = TimeSpan.FromMilliseconds(2000.0);
         public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
 
         public long Id { get; set; }
@@ -34,6 +36,8 @@ namespace Mmo2d
         public TimeSpan? TimeSinceAttackInitiated { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
+        public TimeSpan? TimeSinceCastFireball { get; set; }
+
         public int Kills { get; set; }
 
         [JsonIgnore]
@@ -52,13 +56,13 @@ namespace Mmo2d
             GL.BindTexture(TextureTarget.Texture2D, CharacterTextureId);
 
             RenderSprite(Row, Column);
-
+            
             if (SwordEquipped && TimeSinceAttackInitiated != null)
             {
                 RenderSprite(6, 43);
             }
 
-            if (OverriddenColor == Color.Green && RandomFromId() % 100 == 0)
+            if (OverriddenColor == GoblinColor && RandomFromId() % 100 == 0)
             {
                 RenderSprite(RandomFromId() % 4, 3);
                 RenderSprite(RandomFromId() % 9, 7 % 9 + 6);
@@ -97,7 +101,7 @@ namespace Mmo2d
             var updates = new List<EntityStateUpdate>();
             var generalUpdate = new EntityStateUpdate(Id);
 
-            if (TimeSinceAttackInitiated != null || ((EntityController.Attack || EntityController.AttackAtAll) && SwordEquipped))
+            if (TimeSinceAttackInitiated != null || ((EntityController[EntityController.States.Attack].ActiveOrToggled) && SwordEquipped))
             {
                 if (TimeSinceAttackInitiated == null)
                 { 
@@ -121,9 +125,22 @@ namespace Mmo2d
                 }
             }
 
-            if (EntityController.JumpedAtAll && TimeSinceJump == null)
+            if (EntityController[EntityController.States.Jump].Toggled && TimeSinceJump == null)
             {
                 generalUpdate.Jumped = true;
+            }
+
+            if (EntityController[EntityController.States.CastFireball].Toggled && TimeSinceCastFireball == null)
+            {
+                generalUpdate.CastFireball = true;
+
+                var target = entities.Where(e => e.OverriddenColor == GoblinColor).OrderBy(e => (e.Location - Location).Length).FirstOrDefault();
+
+                if (target != null)
+                {
+                    updates.Add(new EntityStateUpdate(target.Id) { HitsDelta = 1 });
+                    updates.Add(new EntityStateUpdate(target.Id) { Died = true });
+                }
             }
 
             if (TimeSinceDeath != null)
@@ -145,22 +162,22 @@ namespace Mmo2d
         {
             var displacementVector = Vector2.Zero;
 
-            if (EntityController.MoveUp || EntityController.MoveUpAtAll)
+            if (EntityController[EntityController.States.MoveUp].ActiveOrToggled)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(Vector2.UnitY, 0.644f));
             }
 
-            if (EntityController.MoveDown || EntityController.MoveDownAtAll)
+            if (EntityController[EntityController.States.MoveDown].ActiveOrToggled)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(-Vector2.UnitY, 0.644f));
             }
 
-            if (EntityController.MoveLeft || EntityController.MoveLeftAtAll)
+            if (EntityController[EntityController.States.MoveLeft].ActiveOrToggled)
             {
                 displacementVector = Vector2.Add(displacementVector, -Vector2.UnitX);
             }
 
-            if (EntityController.MoveRight || EntityController.MoveRightAtAll)
+            if (EntityController[EntityController.States.MoveRight].ActiveOrToggled)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
             }
@@ -202,6 +219,16 @@ namespace Mmo2d
                 }
             }
 
+            if (TimeSinceCastFireball != null)
+            {
+                TimeSinceCastFireball += delta;
+
+                if (TimeSinceCastFireball > CastFireballAnimationDuration)
+                {
+                    TimeSinceCastFireball = null;
+                }
+            }
+
             foreach (var update in updates)
             {
                 if (update.Displacement != null)
@@ -232,6 +259,11 @@ namespace Mmo2d
                 if (update.HitsDelta != null)
                 {
                     Hits += update.HitsDelta.Value;
+                }
+
+                if (update.CastFireball != null)
+                {
+                    TimeSinceCastFireball = TimeSpan.Zero;
                 }
             }
 

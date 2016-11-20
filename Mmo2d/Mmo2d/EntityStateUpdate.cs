@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using OpenTK;
-using System;
 
 namespace Mmo2d
 {
@@ -21,6 +20,7 @@ namespace Mmo2d
         public bool? Died { get; set; }
         public bool? Jumped { get; set; }
         public bool? AttackInitiated { get; set; }
+        public bool? CastFireball { get; set; }
 
         public int? HitsDelta { get; set; }
         public int? KillsDelta { get; set; }
@@ -31,7 +31,7 @@ namespace Mmo2d
             get
             {
                 return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
-                    HitsDelta.HasValue || KillsDelta.HasValue;
+                    HitsDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue;
             }
         }
     }

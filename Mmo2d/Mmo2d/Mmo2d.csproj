@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dictionary.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="EntityStateUpdate.cs" />
     <Compile Include="GameStateDelta.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="IServer.cs" />
     <Compile Include="ClientServer.cs" />
     <Compile Include="JsonSerializer.cs" />
-    <Compile Include="EntityController.cs" />
+    <Compile Include="Controller\EntityController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HostServer.cs" />
@@ -98,6 +99,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\roguelikeChar_transparent.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
