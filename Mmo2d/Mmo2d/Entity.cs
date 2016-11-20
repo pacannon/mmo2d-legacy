@@ -101,7 +101,7 @@ namespace Mmo2d
             var updates = new List<EntityStateUpdate>();
             var generalUpdate = new EntityStateUpdate(Id);
 
-            if (TimeSinceAttackInitiated != null || ((EntityController[EntityController.States.Attack].ActiveOrToggled) && SwordEquipped))
+            if (TimeSinceAttackInitiated != null || ((EntityController[EntityController.States.Attack].OnOrToggled) && SwordEquipped))
             {
                 if (TimeSinceAttackInitiated == null)
                 { 
@@ -125,12 +125,12 @@ namespace Mmo2d
                 }
             }
 
-            if (EntityController[EntityController.States.Jump].Toggled && TimeSinceJump == null)
+            if (EntityController[EntityController.States.Jump].ToggledOn && TimeSinceJump == null)
             {
                 generalUpdate.Jumped = true;
             }
 
-            if (EntityController[EntityController.States.CastFireball].Toggled && TimeSinceCastFireball == null)
+            if (EntityController[EntityController.States.CastFireball].ToggledOn && TimeSinceCastFireball == null)
             {
                 generalUpdate.CastFireball = true;
 
@@ -162,22 +162,22 @@ namespace Mmo2d
         {
             var displacementVector = Vector2.Zero;
 
-            if (EntityController[EntityController.States.MoveUp].ActiveOrToggled)
+            if (EntityController[EntityController.States.MoveUp].OnOrToggled)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(Vector2.UnitY, 0.644f));
             }
 
-            if (EntityController[EntityController.States.MoveDown].ActiveOrToggled)
+            if (EntityController[EntityController.States.MoveDown].OnOrToggled)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(-Vector2.UnitY, 0.644f));
             }
 
-            if (EntityController[EntityController.States.MoveLeft].ActiveOrToggled)
+            if (EntityController[EntityController.States.MoveLeft].OnOrToggled)
             {
                 displacementVector = Vector2.Add(displacementVector, -Vector2.UnitX);
             }
 
-            if (EntityController[EntityController.States.MoveRight].ActiveOrToggled)
+            if (EntityController[EntityController.States.MoveRight].OnOrToggled)
             {
                 displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
             }

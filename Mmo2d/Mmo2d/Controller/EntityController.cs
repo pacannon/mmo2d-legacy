@@ -54,34 +54,34 @@ namespace Mmo2d.Controller
                 switch (keyEventArgs.Key)
                 {
                     case OpenTK.Input.Key.W:
-                        clone[States.MoveUp].Active = keyEventArgs.KeyDown;
+                        clone[States.MoveUp].On = keyEventArgs.KeyDown;
                         break;
 
                     case OpenTK.Input.Key.S:
-                        clone[States.MoveDown].Active = keyEventArgs.KeyDown;
+                        clone[States.MoveDown].On = keyEventArgs.KeyDown;
                         break;
 
                     case OpenTK.Input.Key.A:
-                        clone[States.MoveLeft].Active = keyEventArgs.KeyDown;
+                        clone[States.MoveLeft].On = keyEventArgs.KeyDown;
                         break;
 
                     case OpenTK.Input.Key.D:
-                        clone[States.MoveRight].Active = keyEventArgs.KeyDown;
+                        clone[States.MoveRight].On = keyEventArgs.KeyDown;
                         break;
 
                     case OpenTK.Input.Key.Space:
-                        clone[States.Jump].Active = keyEventArgs.KeyDown;
+                        clone[States.Jump].On = keyEventArgs.KeyDown;
                         break;
 
                     case OpenTK.Input.Key.E:
-                        clone[States.CastFireball].Active = keyEventArgs.KeyDown;
+                        clone[States.CastFireball].On = keyEventArgs.KeyDown;
                         break;
                 }
             }
 
             if (userCommand.MousePressed.HasValue)
             {
-                clone[States.Attack].Active = userCommand.MousePressed.Value;
+                clone[States.Attack].On = userCommand.MousePressed.Value;
             }
 
             return clone;
@@ -97,40 +97,60 @@ namespace Mmo2d.Controller
 
         public class ToggleableState
         {
-            private bool active;
+            private bool on;
+            private bool toggled;
 
-            public bool Active
+            public bool On
             {
-                get { return active; }
+                get { return on; }
 
                 set
                 {
-                    if (active == value)
+                    if (on == value)
                     {
                         return;
                     }
 
-                    active = value;
+                    on = value;
 
                     Toggled = true;
+                    ToggledOn = On;
                 }
             }
 
-            public bool Toggled { get; set; }
-
-            public bool ActiveOrToggled
+            public bool Toggled
             {
-                get { return Active || Toggled; }
+                get { return toggled; }
+
+                set
+                {
+                    if (toggled == value)
+                    {
+                        return;
+                    }
+
+                    toggled = value;
+
+                    ToggledOn |= On;
+                }
+            }
+
+            public bool ToggledOn { get; set; }
+
+            public bool OnOrToggled
+            {
+                get { return On || Toggled; }
             }
 
             public void Toggle()
             {
-                Active = !Active;
+                On = !On;
             }
 
             public void EraseMemory()
             {
                 Toggled = false;
+                ToggledOn = false;
             }
         }
     }
