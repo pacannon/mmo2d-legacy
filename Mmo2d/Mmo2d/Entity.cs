@@ -15,12 +15,12 @@ namespace Mmo2d
     {
         public static int CharacterTextureId { get; set; }
 
-        public const float Speed = 0.01f;
-        public const float width = 0.2f;
-        public const float height = 0.2f;
+        public const float Speed = 0.04f;
+        public const float width = 1.0f;
+        public const float height = 1.0f;
         public const float sprite_size = 17.0f;
         public const float SwordLength = 0.4f;
-        public const float HalfAcceration = -2.81f / 2.0f;
+        public const float HalfAcceration = -9.81f / 2.0f;
 
         public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(500.0);
@@ -40,6 +40,8 @@ namespace Mmo2d
         public TimeSpan? TimeSinceCastFireball { get; set; }
         public Fireball Fireball { get; set; }
 
+        public long? TargetId { get; set; }
+
         public int Kills { get; set; }
 
         [JsonIgnore]
@@ -53,25 +55,25 @@ namespace Mmo2d
             EntityController = new EntityController();
         }
 
-        public void Render()
+        public void Render(bool selected)
         {
             GL.BindTexture(TextureTarget.Texture2D, CharacterTextureId);
 
-            RenderSprite(Row, Column);
+            RenderSprite(Row, Column, selected);
             
             if (SwordEquipped && TimeSinceAttackInitiated != null)
             {
-                RenderSprite(6, 43);
+                RenderSprite(6, 43, selected);
             }
 
             if (OverriddenColor == GoblinColor && RandomFromId() % 100 == 0)
             {
-                RenderSprite(RandomFromId() % 4, 3);
-                RenderSprite(RandomFromId() % 9, 7 % 9 + 6);
+                RenderSprite(RandomFromId() % 4, 3, selected);
+                RenderSprite(RandomFromId() % 9, 7 % 9 + 6, selected);
             }
         }
 
-        private void RenderSprite(int row, int column)
+        private void RenderSprite(int row, int column, bool selected)
         {
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
@@ -80,13 +82,13 @@ namespace Mmo2d
 
             GL.Color3(Color.Transparent);
 
-            GL.TexCoord2((sprite_size * column) / 917.0f, (1.0f + sprite_size * row) / 203.0f); GL.Vertex2(TopLeftCorner);
+            GL.TexCoord2((sprite_size * column) / 917.0f, (0.0f + sprite_size * row) / 203.0f); GL.Vertex2(RenderCorner(TopLeftCorner, selected));
 
-            GL.TexCoord2((sprite_size * column) / 917.0f, (17.0f + sprite_size * row) / 203.0f); GL.Vertex2(BottomLeftCorner);
+            GL.TexCoord2((sprite_size * column) / 917.0f, (16.0f + sprite_size * row) / 203.0f); GL.Vertex2(RenderCorner(BottomLeftCorner, selected));
 
-            GL.TexCoord2((16.0f + sprite_size * column) / 917.0f, (17.0f + sprite_size * row) / 203.0f); GL.Vertex2(BottomRightCorner);
+            GL.TexCoord2((16.0f + sprite_size * column) / 917.0f, (16.0f + sprite_size * row) / 203.0f); GL.Vertex2(RenderCorner(BottomRightCorner, selected));
 
-            GL.TexCoord2((16.0f + sprite_size * column) / 917.0f, (1.0f + sprite_size * row) / 203.0f); GL.Vertex2(TopRightCorner);
+            GL.TexCoord2((16.0f + sprite_size * column) / 917.0f, (0.0f + sprite_size * row) / 203.0f); GL.Vertex2(RenderCorner(TopRightCorner, selected));
 
             GL.End();
 
@@ -132,18 +134,18 @@ namespace Mmo2d
                 generalUpdate.Jumped = true;
             }
 
-            if (EntityController[EntityController.States.CastFireball].On && TimeSinceCastFireball == null)
+            if (EntityController[EntityController.States.CastFireball].On && TimeSinceCastFireball == null && TargetId != null)
             {
                 generalUpdate.CastFireball = true;
 
                 //var target = entities.Where(e => e.OverriddenColor == GoblinColor).OrderBy(e => (e.Location - Location).Length).FirstOrDefault();
 
-                var targets = entities.Where(e => e.OverriddenColor == GoblinColor);
+                var targets = entities.Where(e => e.OverriddenColor == GoblinColor && e.Id == TargetId);
                 Entity target = null;
 
                 if (targets.Count() > 0)
                 {
-                    target = targets.ElementAt(random.Next() % targets.Count());
+                    target = targets.First();
                 }
 
                 if (target != null)
@@ -151,7 +153,17 @@ namespace Mmo2d
                     updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, target.Id, random.Next(), Id) });
                 }
             }
-            
+
+            if (EntityController.TargetId != TargetId)
+            {
+                generalUpdate.SetTargetId = EntityController.TargetId;
+
+                if (generalUpdate.SetTargetId == null)
+                {
+                    generalUpdate.DeselectTarget = true;
+                }
+            }
+
             if (TimeSinceDeath != null)
             {
                 generalUpdate.Died = true;
@@ -274,6 +286,16 @@ namespace Mmo2d
                 {
                     TimeSinceCastFireball = TimeSpan.Zero;
                 }
+
+                if (update.SetTargetId != null)
+                {
+                    TargetId = update.SetTargetId;
+                }
+
+                if (update.DeselectTarget != null)
+                {
+                    TargetId = null;
+                }
             }
 
             EntityController.Update();
@@ -299,6 +321,11 @@ namespace Mmo2d
         {
             var integer = unchecked((int)(Id));
             return integer < 0 ? -integer : integer;
+        }
+
+        public Vector2 RenderCorner(Vector2 corner, bool selected)
+        {
+            return selected ? Vector2.Multiply((corner - Location), (1.3f)) + Location : corner;
         }
 
         [JsonIgnore]

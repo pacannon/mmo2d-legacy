@@ -29,13 +29,17 @@ namespace Mmo2d
 
         public bool? RemoveFireball { get; set; }
 
+        public long? SetTargetId { get; set; }
+        public bool? DeselectTarget { get; set; }
+
         [JsonIgnore]
         public bool ContainsInformation
         {
             get
             {
                 return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
-                    HitsDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue || AddFireball != null || RemoveFireball.HasValue;
+                    HitsDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue || AddFireball != null || RemoveFireball.HasValue || 
+                    SetTargetId.HasValue || DeselectTarget.HasValue;
             }
         }
     }

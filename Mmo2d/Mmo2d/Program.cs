@@ -23,10 +23,15 @@ namespace Example
         public static GameState GameState;
         public static Ui Ui;
         public static TextureLoader TextureLoader;
-        
+       
+        public static float CameraWidth { get; set; }
+        public static float CameraHeight { get; set; }
+
         [STAThread]
         public static void Main()
         {
+            CameraHeight = CameraWidth = 9.0f;
+
             GameState = new GameState(null);
             DisplayLogin();
 
@@ -84,10 +89,10 @@ namespace Example
 
                         if (playerEntity != null)
                         {
-                            GL.Ortho(playerEntity.Location.X - 1.0, playerEntity.Location.X + 1.0, playerEntity.Location.Y - 1.0, playerEntity.Location.Y + 1.0, 0.0, 4.0);
+                            GL.Ortho(playerEntity.Location.X - CameraWidth / 2.0, playerEntity.Location.X + CameraWidth / 2.0, playerEntity.Location.Y - CameraHeight / 2.0, playerEntity.Location.Y + CameraHeight / 2.0, 0.0, 4.0);
                         }
 
-                        GameState.Render();
+                        GameState.Render(playerController);
                     }
 
                     Ui.Render(playerEntity, game.Width, game.Height);
@@ -125,9 +130,19 @@ namespace Example
 
                 game.MouseDown += (sender, e) =>
                 {
-
-
                     var userCommand = new UserCommand() { MousePressed = e.IsPressed, };
+
+                    var bottomLeftOfScreen = CameraBottomLeft();
+                    var clicked = new Vector2 { X = ((float)e.Position.X / (float)game.Width) * CameraWidth, Y = CameraHeight - ((float)e.Position.Y / (float)game.Height) * CameraHeight };
+
+                    var setTargetTo = GameState.TargetId(clicked + bottomLeftOfScreen);
+
+                    userCommand.SetTargetId = setTargetTo;
+
+                    if (setTargetTo == null && playerController.TargetId.HasValue)
+                    {
+                        userCommand.DeselectTarget = true;
+                    }
 
                     playerController = playerController.ApplyUserCommand(userCommand);
 
@@ -257,6 +272,36 @@ namespace Example
             }
 
             Server = new ClientServer(hostIpString);
+        }
+ 
+        public static Vector2 CameraCentered()
+        {
+            if (GameState != null)
+            {
+                var playerEntity = GameState.Entities.FirstOrDefault(en => en.Id == IssuedId);
+
+                if (playerEntity != null)
+                {
+                    return new Vector2(playerEntity.Location.X, playerEntity.Location.Y);
+                }
+            }
+
+            return Vector2.Zero;
+        }
+
+        public static Vector2 CameraBottomLeft()
+        {
+            if (GameState != null)
+            {
+                var playerEntity = GameState.Entities.FirstOrDefault(en => en.Id == IssuedId);
+
+                if (playerEntity != null)
+                {
+                    return new Vector2(playerEntity.Location.X - CameraWidth / 2.0f, playerEntity.Location.Y - CameraHeight / 2.0f);
+                }
+            }
+
+            return Vector2.Zero;
         }
     }
 }

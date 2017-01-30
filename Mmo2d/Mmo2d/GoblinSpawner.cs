@@ -9,7 +9,7 @@ namespace Mmo2d
     public class GoblinSpawner
     {
         public const int MaxGoblins = 20;
-        public const float SpawningRadius = 1.0f;
+        public const float SpawningRadius = 4.0f;
         public static readonly TimeSpan SpawningInterval = TimeSpan.FromMilliseconds(200.0);
 
         public List<Entity> SpawnedGoblins { get; set; }
