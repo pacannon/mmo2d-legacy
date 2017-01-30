@@ -30,7 +30,7 @@ namespace Mmo2d
 
         public long Id { get; set; }
 
-        public Color? OverriddenColor { get; set; }
+        public bool? IsGoblin { get; set; }
         public bool SwordEquipped { get; set; }
 
         public Vector2 Location { get; set; }
@@ -66,7 +66,7 @@ namespace Mmo2d
                 RenderSprite(6, 43, selected);
             }
 
-            if (OverriddenColor == GoblinColor && RandomFromId() % 100 == 0)
+            if (IsGoblin.GetValueOrDefault() && RandomFromId() % 100 == 0)
             {
                 RenderSprite(RandomFromId() % 4, 3, selected);
                 RenderSprite(RandomFromId() % 9, 7 % 9 + 6, selected);
@@ -140,7 +140,7 @@ namespace Mmo2d
 
                 //var target = entities.Where(e => e.OverriddenColor == GoblinColor).OrderBy(e => (e.Location - Location).Length).FirstOrDefault();
 
-                var targets = entities.Where(e => e.OverriddenColor == GoblinColor && e.Id == TargetId);
+                var targets = entities.Where(e => e.IsGoblin.GetValueOrDefault() && e.Id == TargetId);
                 Entity target = null;
 
                 if (targets.Count() > 0)
@@ -303,7 +303,7 @@ namespace Mmo2d
 
         public bool Attacking(Entity entity)
         {
-            return entity.OverriddenColor == GoblinColor && SwordEquipped && Overlapping(entity);
+            return entity.IsGoblin.GetValueOrDefault() && SwordEquipped && Overlapping(entity);
         }
 
         public bool Overlapping(Entity entity)
@@ -359,7 +359,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == GoblinColor ? 3 : OverriddenColor == Color.Red ? 6 : RandomFromId() % 6 + 5;
+                return IsGoblin.GetValueOrDefault() ? 3 : RandomFromId() % 6 + 5;
             }
         }
 
@@ -368,7 +368,7 @@ namespace Mmo2d
         {
             get
             {
-                return OverriddenColor == Color.Red ? 43 : RandomFromId() % 2;
+                return RandomFromId() % 2;
             }
         }
 
