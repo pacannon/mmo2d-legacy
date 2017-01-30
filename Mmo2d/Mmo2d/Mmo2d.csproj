@@ -79,7 +79,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="UserCommands\KeyEventArgs.cs" />
-    <Compile Include="UserCommands\ServerUpdatePacket.cs" />
+    <Compile Include="UserCommands\UserCommand.cs" />
     <Compile Include="AuthoritativePackets\AuthoritativePacket.cs" />
     <Compile Include="ShouldSerializeContractResolver.cs" />
     <Compile Include="GameState.cs" />
