@@ -8,9 +8,9 @@ namespace Mmo2d
 {
     public class GoblinSpawner
     {
-        public const int MaxGoblins = 20;
+        public const int MaxGoblins = 5;
         public const float SpawningRadius = 4.0f;
-        public static readonly TimeSpan SpawningInterval = TimeSpan.FromMilliseconds(200.0);
+        public static readonly TimeSpan SpawningInterval = TimeSpan.FromMilliseconds(2000.0);
 
         public List<Entity> SpawnedGoblins { get; set; }
 
@@ -26,7 +26,7 @@ namespace Mmo2d
             SpawnedGoblins = new List<Entity>();
             X = position.X;
             Y = position.Y;
-            TimeSinceLastGoblinAddition = TimeSpan.Zero;
+            TimeSinceLastGoblinAddition = SpawningInterval;
             Random = random;
         }
 
@@ -44,13 +44,12 @@ namespace Mmo2d
 
             if (SpawnedGoblins.Count < MaxGoblins && TimeSinceLastGoblinAddition >= SpawningInterval)
             {
-                var newlySpawnedGoblin = new Entity() { OverriddenColor = Entity.GoblinColor, Id = Random.Next(), /*EntityController = new GoblinEntityController(Random),*/ };
+                var newlySpawnedGoblin = new Entity() { IsGoblin = true, Id = Random.Next(), /*EntityController = new GoblinEntityController(Random),*/ };
 
                 var randomAngle = Random.NextDouble() * Math.PI * 2.0;
                 var randomRadius = Random.NextDouble() * SpawningRadius;
-
-                // This is not uniform randomness. See http://mathworld.wolfram.com/DiskPointPicking.html for more info.
-                var randomCoords = System.Numerics.Complex.FromPolarCoordinates(randomRadius, randomAngle);
+                
+                var randomCoords = System.Numerics.Complex.FromPolarCoordinates(Math.Sqrt(randomRadius), randomAngle);
 
                 var randomPostion = new Vector2((float)randomCoords.Real + X, (float)randomCoords.Imaginary + Y);
 
