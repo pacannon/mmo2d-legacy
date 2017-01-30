@@ -10,6 +10,7 @@ using Mmo2d.UserCommands;
 using System.Linq;
 using Mmo2d.Textures;
 using System.Collections.Generic;
+using Mmo2d.Controller;
 
 namespace Example
 {
@@ -28,7 +29,9 @@ namespace Example
         {
             GameState = new GameState(null);
             DisplayLogin();
-                
+
+            var playerController = new EntityController();
+
             using (var game = new GameWindow())
             {
                 game.Load += (sender, e) =>
@@ -99,7 +102,11 @@ namespace Example
                         return;
                     }
 
-                    Server.QueueUserCommand(new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, }, });
+                    var userCommand = new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, }, };
+
+                    playerController = playerController.ApplyUserCommand(userCommand);
+
+                    Server.QueueUserCommand(userCommand);
                 };
 
                 game.KeyUp += (sender, e) =>
@@ -109,17 +116,31 @@ namespace Example
                         return;
                     }
 
-                    Server.QueueUserCommand(new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, }, });
+                    var userCommand = new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, }, };
+
+                    playerController = playerController.ApplyUserCommand(userCommand);
+
+                    Server.QueueUserCommand(userCommand);
                 };
 
                 game.MouseDown += (sender, e) =>
                 {
-                    Server.QueueUserCommand(new UserCommand() { MousePressed = e.IsPressed, });
+
+
+                    var userCommand = new UserCommand() { MousePressed = e.IsPressed, };
+
+                    playerController = playerController.ApplyUserCommand(userCommand);
+
+                    Server.QueueUserCommand(userCommand);
                 };
 
                 game.MouseUp += (sender, e) =>
                 {
-                    Server.QueueUserCommand(new UserCommand() { MousePressed = e.IsPressed, });
+                    var userCommand = new UserCommand() { MousePressed = e.IsPressed, };
+
+                    playerController = playerController.ApplyUserCommand(userCommand);
+
+                    Server.QueueUserCommand(userCommand);
                 };
 
                 // Run the game at 60 updates per second
