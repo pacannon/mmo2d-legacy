@@ -100,7 +100,7 @@ namespace Mmo2d
 
             var removed = Entities.RemoveAll(e => updates.SelectMany(u => u.EntitiesToRemove).Contains(e.Id));
 
-
+            Entities = Entities.OrderBy(e => e.Location.X).OrderByDescending(e => e.Location.Y).ToList();
         }
 
         public GameState Clone()
@@ -117,7 +117,10 @@ namespace Mmo2d
 
         internal long? TargetId(Vector2 targetLocation)
         {
-            foreach (var entitiy in Entities)
+            var entitiesCopy = Entities.ToList();
+            entitiesCopy.Reverse();
+
+            foreach (var entitiy in entitiesCopy)
             {
                 if (entitiy.Overlapping(targetLocation))
                 {

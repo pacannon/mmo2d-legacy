@@ -10,7 +10,6 @@ namespace Mmo2d.Entities
 {
     public class Fireball
     {
-
         public const float width = 0.2f;
         public const float height = 0.2f;
         public const float radius = 0.05f;
