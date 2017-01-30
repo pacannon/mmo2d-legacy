@@ -159,7 +159,7 @@ namespace Mmo2d
             NetOutgoingMessage netOutGoindMessage = NetClient.CreateMessage(serializedMessage);
             NetClient.SendMessage(netOutGoindMessage, NetDeliveryMethod.ReliableOrdered);
 
-            //Console.WriteLine(serializedMessage);
+            Console.WriteLine("Sending UserCommand: " + serializedMessage);
         }
 
         public void QueueUserCommand(UserCommand userCommand)

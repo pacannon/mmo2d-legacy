@@ -1,5 +1,7 @@
-﻿using Mmo2d.Entities;
+﻿using Mmo2d.Controller;
+using Mmo2d.Entities;
 using Newtonsoft.Json;
+using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,11 +26,11 @@ namespace Mmo2d
             Random = random;
         }
 
-        public void Render()
+        public void Render(EntityController playerController)
         {
             foreach (var entity in Entities)
             {
-                entity.Render();
+                entity.Render(entity.Id == playerController.TargetId);
             }
 
             foreach (var fireball in Fireballs)
@@ -111,6 +113,19 @@ namespace Mmo2d
 
             var serialized = JsonSerializer.Serialize(this);
             return JsonSerializer.Deserialize<GameState>(serialized);
+        }
+
+        internal long? TargetId(Vector2 targetLocation)
+        {
+            foreach (var entitiy in Entities)
+            {
+                if (entitiy.Overlapping(targetLocation))
+                {
+                    return entitiy.Id;
+                }
+            }
+
+            return null;
         }
     }
 }

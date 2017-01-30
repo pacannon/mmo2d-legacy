@@ -8,8 +8,7 @@ namespace Mmo2d.Controller
     {
         public Dictionary<States, ToggleableState> ToggleableStates { get; set; }
 
-        public long TargetId { get; set; }
-        public bool TargetSelected { get; set; }
+        public long? TargetId { get; set; }
 
         public enum States
         {
@@ -89,12 +88,11 @@ namespace Mmo2d.Controller
 
             if (userCommand.DeselectTarget.HasValue)
             {
-                clone.TargetSelected = false;
+                clone.TargetId = null;
             }
 
             if (userCommand.SetTargetId.HasValue)
             {
-                clone.TargetSelected = true;
                 clone.TargetId = userCommand.SetTargetId.Value;
             }
 
