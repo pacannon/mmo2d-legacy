@@ -22,7 +22,6 @@ namespace Mmo2d
         public const float SwordLength = 0.4f;
         public const float HalfAcceration = -9.81f / 2.0f;
 
-        public static readonly Color GoblinColor = Color.Green;
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(500.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
         public static readonly TimeSpan CastFireballCooldown = TimeSpan.FromMilliseconds(200.0);
@@ -38,9 +37,9 @@ namespace Mmo2d
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
         public TimeSpan? TimeSinceCastFireball { get; set; }
-        public Fireball Fireball { get; set; }
 
         public long? TargetId { get; set; }
+        public long? CastTargetId { get; set; }
 
         public int Kills { get; set; }
 
@@ -134,12 +133,8 @@ namespace Mmo2d
                 generalUpdate.Jumped = true;
             }
 
-            if (EntityController[EntityController.States.CastFireball].On && TimeSinceCastFireball == null && TargetId != null)
+            if (EntityController[EntityController.States.CastFireball].ToggledOn && CastTargetId == null && TargetId != null)
             {
-                generalUpdate.CastFireball = true;
-
-                //var target = entities.Where(e => e.OverriddenColor == GoblinColor).OrderBy(e => (e.Location - Location).Length).FirstOrDefault();
-
                 var targets = entities.Where(e => e.IsGoblin.GetValueOrDefault() && e.Id == TargetId);
                 Entity target = null;
 
@@ -150,8 +145,17 @@ namespace Mmo2d
 
                 if (target != null)
                 {
-                    updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, target.Id, random.Next(), Id) });
+                    updates.Add(new EntityStateUpdate(Id) { StartCastFireball = target.Id, });
                 }
+            }
+
+            if (TimeSinceCastFireball.HasValue && TimeSinceCastFireball.Value >= Fireball.CastTime)
+            {
+                // Todo: Give Fireball age of timeSince - castTime
+                updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id) });
+
+                TimeSinceCastFireball = null;
+                CastTargetId = null;
             }
 
             if (EntityController.TargetId != TargetId)
@@ -243,11 +247,6 @@ namespace Mmo2d
             if (TimeSinceCastFireball != null)
             {
                 TimeSinceCastFireball += delta;
-
-                if (TimeSinceCastFireball > CastFireballCooldown)
-                {
-                    TimeSinceCastFireball = null;
-                }
             }
 
             foreach (var update in updates)
@@ -295,6 +294,12 @@ namespace Mmo2d
                 if (update.DeselectTarget != null)
                 {
                     TargetId = null;
+                }
+
+                if (update.StartCastFireball != null)
+                {
+                    CastTargetId = update.StartCastFireball.Value;
+                    TimeSinceCastFireball = TimeSpan.Zero;
                 }
             }
 

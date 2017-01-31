@@ -13,6 +13,7 @@ namespace Mmo2d.Entities
         public const float width = 0.2f;
         public const float height = 0.2f;
         public const float radius = 0.05f;
+        public static readonly TimeSpan CastTime = TimeSpan.FromSeconds(3.0);
 
         [JsonIgnore]
         public float LeftEdge { get { return Location.X - width / 2.0f; } }
