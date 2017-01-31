@@ -118,7 +118,7 @@ namespace Mmo2d.Entities
 
                 var direction = (targetEntity.Location - Location).Normalized();
 
-                var newLocation = Location + Vector2.Multiply(direction, 0.01f) + Vector2.Multiply(direction, t_squared);
+                var newLocation = Location + Vector2.Multiply(direction, 0.04f) + Vector2.Multiply(direction, 10.0f * t_squared);
 
                 return newLocation;
             }
