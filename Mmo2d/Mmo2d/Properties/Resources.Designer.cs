@@ -69,5 +69,15 @@ namespace Mmo2d.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap UIpackSheet_transparent {
+            get {
+                object obj = ResourceManager.GetObject("UIpackSheet_transparent", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

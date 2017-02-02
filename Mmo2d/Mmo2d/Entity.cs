@@ -8,6 +8,7 @@ using Mmo2d.UserCommands;
 using Mmo2d.Controller;
 using Newtonsoft.Json;
 using Mmo2d.Entities;
+using Mmo2d.Textures;
 
 namespace Mmo2d
 {
@@ -18,8 +19,6 @@ namespace Mmo2d
         public const float Speed = 0.04f;
         public const float width = 1.0f;
         public const float height = 1.0f;
-        public const float sprite_size = 17.0f;
-        public const float SwordLength = 0.4f;
         public const float HalfAcceration = -9.81f / 2.0f;
 
         public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(500.0);
@@ -70,28 +69,43 @@ namespace Mmo2d
                 RenderSprite(RandomFromId() % 4, 3, selected);
                 RenderSprite(RandomFromId() % 9, 7 % 9 + 6, selected);
             }
+
+            if (TimeSinceCastFireball != null)
+            {
+                RenderCastBar(TimeSinceCastFireball.Value, Fireball.CastTime);
+            }
         }
 
-        private void RenderSprite(int row, int column, bool selected)
+        private void RenderCastBar(TimeSpan elapsed, TimeSpan total)
         {
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+            const float third = (1.0f / 3.0f);
+            var percentage = (float)(elapsed.TotalMilliseconds / total.TotalMilliseconds);
+            
 
-            GL.Begin(PrimitiveType.Quads);
+            SpriteSheet.Ui[25][6].Render(Location - new Vector2(Width, 0.0f), Width, height);
+            SpriteSheet.Ui[25][7].Render(Location, Width, height);
+            SpriteSheet.Ui[25][8].Render(Location + new Vector2(Width, 0.0f), Width, height);
 
-            GL.Color3(Color.Transparent);
+            SpriteSheet.Ui[27][0].Render(Location - new Vector2(Width, 0.0f), Width, height, percentage / third);
 
-            GL.TexCoord2((sprite_size * column) / 917.0f, (0.0f + sprite_size * row) / 203.0f); GL.Vertex2(RenderCorner(TopLeftCorner, selected));
+            if (percentage >= third)
+            {
+                SpriteSheet.Ui[27][1].Render(Location, Width, height, (percentage - third) / third);
 
-            GL.TexCoord2((sprite_size * column) / 917.0f, (16.0f + sprite_size * row) / 203.0f); GL.Vertex2(RenderCorner(BottomLeftCorner, selected));
-
-            GL.TexCoord2((16.0f + sprite_size * column) / 917.0f, (16.0f + sprite_size * row) / 203.0f); GL.Vertex2(RenderCorner(BottomRightCorner, selected));
-
-            GL.TexCoord2((16.0f + sprite_size * column) / 917.0f, (0.0f + sprite_size * row) / 203.0f); GL.Vertex2(RenderCorner(TopRightCorner, selected));
+                if (percentage >= 2 * third)
+                {
+                    SpriteSheet.Ui[27][2].Render(Location + new Vector2(Width, 0.0f), Width, height, (percentage - 2 * third) / third);
+                }
+            }
 
             GL.End();
 
             GL.Disable(EnableCap.Blend);
+        }
+
+        private void RenderSprite(int row, int column, bool selected)
+        {
+            SpriteSheet.Characters[row][column].Render(Location + new Vector2(0.0f, Height), Width * (selected ? 1.3f : 1.0f), height * (selected ? 1.3f : 1.0f));
         }
 
         public void InputHandler(UserCommand userCommand)
@@ -116,7 +130,7 @@ namespace Mmo2d
 
                 foreach (var attackedEntity in entities.Where(e => Attacking(e)))
                 {
-                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { HitsDelta = 1 });           
+                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { HitsDelta = 1 });        
                     updates.Add(new EntityStateUpdate(attackedEntity.Id) { Died = true });
 
                     if (generalUpdate.KillsDelta == null)
@@ -133,6 +147,14 @@ namespace Mmo2d
                 generalUpdate.Jumped = true;
             }
 
+            if (TimeSinceCastFireball == null && CastTargetId != null)
+            {
+                // Todo: Give Fireball age of timeSince - castTime
+                updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id) });
+
+                CastTargetId = null;
+            }
+
             if (EntityController[EntityController.States.CastFireball].ToggledOn && CastTargetId == null && TargetId != null)
             {
                 var targets = entities.Where(e => e.IsGoblin.GetValueOrDefault() && e.Id == TargetId);
@@ -147,15 +169,6 @@ namespace Mmo2d
                 {
                     updates.Add(new EntityStateUpdate(Id) { StartCastFireball = target.Id, });
                 }
-            }
-
-            if (TimeSinceCastFireball.HasValue && TimeSinceCastFireball.Value >= Fireball.CastTime)
-            {
-                // Todo: Give Fireball age of timeSince - castTime
-                updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id) });
-
-                TimeSinceCastFireball = null;
-                CastTargetId = null;
             }
 
             if (EntityController.TargetId != TargetId)
@@ -247,6 +260,11 @@ namespace Mmo2d
             if (TimeSinceCastFireball != null)
             {
                 TimeSinceCastFireball += delta;
+                
+                if (TimeSinceCastFireball > Fireball.CastTime)
+                {
+                    TimeSinceCastFireball = null;
+                }
             }
 
             foreach (var update in updates)
@@ -326,11 +344,6 @@ namespace Mmo2d
         {
             var integer = unchecked((int)(Id));
             return integer < 0 ? -integer : integer;
-        }
-
-        public Vector2 RenderCorner(Vector2 corner, bool selected)
-        {
-            return selected ? Vector2.Multiply((corner - Location), (1.3f)) + Location : corner;
         }
 
         [JsonIgnore]

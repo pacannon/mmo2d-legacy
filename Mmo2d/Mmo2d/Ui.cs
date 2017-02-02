@@ -28,13 +28,15 @@ namespace Mmo2d
 
     public class Ui
     {
+        public static int TextureId { get; set; }
+
         public int TextureWidth { get; set; }
         public int TextureHeight { get; set; }
         public int FontTextureId { get; set; }
 
-        public Ui(TextureLoader textureLoader)
+        public Ui()
         {
-            GenerateFontImage(textureLoader);
+            GenerateFontImage();
         }
 
         public void Render(Entity playerEntity, int width, int height)
@@ -84,7 +86,7 @@ namespace Mmo2d
             GL.Disable(EnableCap.Blend);
         }
 
-        private void GenerateFontImage(TextureLoader textureLoader)
+        private void GenerateFontImage()
         {
             int bitmapWidth = Settings.GlyphsPerLine * Settings.GlyphWidth;
             int bitmapHeight = Settings.GlyphLineCount * Settings.GlyphHeight;
@@ -129,7 +131,7 @@ namespace Mmo2d
                     }
                 }
 
-                FontTextureId = textureLoader.LoadTexture(bitmap);
+                FontTextureId = TextureLoader.LoadTexture(bitmap);
 
                 TextureWidth = bitmap.Width; TextureHeight = bitmap.Height;
             }

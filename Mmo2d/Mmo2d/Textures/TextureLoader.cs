@@ -4,9 +4,9 @@ using System.Drawing.Imaging;
 
 namespace Mmo2d.Textures
 {
-    public class TextureLoader
+    public static class TextureLoader
     {
-        public int LoadTexture(Bitmap bitmap)
+        public static int LoadTexture(Bitmap bitmap)
         {
             int id = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, id);

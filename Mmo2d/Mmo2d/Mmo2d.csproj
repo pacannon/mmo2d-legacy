@@ -78,6 +78,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Textures\SpriteSheet.cs" />
     <Compile Include="UserCommands\KeyEventArgs.cs" />
     <Compile Include="UserCommands\UserCommand.cs" />
     <Compile Include="AuthoritativePackets\AuthoritativePacket.cs" />
@@ -100,7 +101,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\roguelikeChar_transparent.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\UIpackSheet_transparent.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
