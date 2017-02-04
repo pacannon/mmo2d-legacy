@@ -45,8 +45,8 @@ namespace Mmo2d
         [JsonIgnore]
         public EntityController EntityController { get; set; }
 
-        [JsonIgnore]
-        public int Hits { get; set; }
+        public int Hp { get; set; }
+        public int MaximumHp { get { return 10; } }
 
         public Entity()
         {
@@ -74,13 +74,18 @@ namespace Mmo2d
             {
                 RenderCastBar(TimeSinceCastFireball.Value, Fireball.CastTime);
             }
+
+            if (selected)
+            {
+                RenderHp();
+            }
         }
 
         private void RenderCastBar(TimeSpan elapsed, TimeSpan total)
         {
             const float third = (1.0f / 3.0f);
             var percentage = (float)(elapsed.TotalMilliseconds / total.TotalMilliseconds);
-            
+
 
             SpriteSheet.Ui[25][6].Render(Location - new Vector2(Width, 0.0f), Width, height);
             SpriteSheet.Ui[25][7].Render(Location, Width, height);
@@ -95,6 +100,33 @@ namespace Mmo2d
                 if (percentage >= 2 * third)
                 {
                     SpriteSheet.Ui[27][2].Render(Location + new Vector2(Width, 0.0f), Width, height, (percentage - 2 * third) / third);
+                }
+            }
+
+            GL.End();
+
+            GL.Disable(EnableCap.Blend);
+        }
+
+        private void RenderHp()
+        {
+            const float third = (1.0f / 3.0f);
+            var percentage = (float)((float)Hp/MaximumHp);
+
+
+            SpriteSheet.Ui[25][6].Render(Location - new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height), Width, height);
+            SpriteSheet.Ui[25][7].Render(Location + Vector2.Multiply(Vector2.UnitY, height), Width, height);
+            SpriteSheet.Ui[25][8].Render(Location + new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height), Width, height);
+
+            SpriteSheet.Ui[27][6].Render(Location - new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height), Width, height, percentage / third);
+
+            if (percentage >= third)
+            {
+                SpriteSheet.Ui[27][7].Render(Location + Vector2.Multiply(Vector2.UnitY, height), Width, height, (percentage - third) / third);
+
+                if (percentage >= 2 * third)
+                {
+                    SpriteSheet.Ui[27][8].Render(Location + new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height), Width, height, (percentage - 2 * third) / third);
                 }
             }
 
@@ -130,15 +162,19 @@ namespace Mmo2d
 
                 foreach (var attackedEntity in entities.Where(e => Attacking(e)))
                 {
-                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { HitsDelta = 1 });        
-                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { Died = true });
+                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { HpDelta = -1 });
 
-                    if (generalUpdate.KillsDelta == null)
+                    if (attackedEntity.Hp < 1)
                     {
-                        generalUpdate.KillsDelta = 0;
-                    }
+                        updates.Add(new EntityStateUpdate(attackedEntity.Id) { Died = true, });
 
-                    generalUpdate.KillsDelta++;
+                        if (generalUpdate.KillsDelta == null)
+                        {
+                            generalUpdate.KillsDelta = 0;
+                        }
+
+                        generalUpdate.KillsDelta++;
+                    }
                 }
             }
 
@@ -294,9 +330,9 @@ namespace Mmo2d
                     Kills += update.KillsDelta.Value;
                 }
 
-                if (update.HitsDelta != null)
+                if (update.HpDelta != null)
                 {
-                    Hits += update.HitsDelta.Value;
+                    Hp += update.HpDelta.Value;
                 }
 
                 if (update.CastFireball != null)

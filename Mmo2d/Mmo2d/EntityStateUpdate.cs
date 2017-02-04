@@ -23,7 +23,7 @@ namespace Mmo2d
         public bool? AttackInitiated { get; set; }
         public long? CastFireball { get; set; }
 
-        public int? HitsDelta { get; set; }
+        public int? HpDelta { get; set; }
         public int? KillsDelta { get; set; }
 
         // Merge this into game state update
@@ -42,7 +42,7 @@ namespace Mmo2d
             get
             {
                 return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
-                    HitsDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue || AddFireball != null || RemoveFireball.HasValue || 
+                    HpDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue || AddFireball != null || RemoveFireball.HasValue || 
                     SetTargetId.HasValue || DeselectTarget.HasValue || StartCastFireball.HasValue;
             }
         }

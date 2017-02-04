@@ -83,7 +83,7 @@ namespace Mmo2d
                                         //UpdateConnectionsList();
                                         var remoteUniqueIdentifier = im.SenderConnection.RemoteUniqueIdentifier;
 
-                                        UserCommandQueue.Enqueue(new UserCommand { CreateEntity = new Entity { Id = remoteUniqueIdentifier, SwordEquipped = true } });
+                                        UserCommandQueue.Enqueue(new UserCommand { CreateEntity = new Entity { Id = remoteUniqueIdentifier, SwordEquipped = true, Hp = 10, } });
 
                                         NetOutgoingMessage om = NetServer.CreateMessage();
                                         var authoritativePacket = new AuthoritativePacket() { IdIssuance = remoteUniqueIdentifier, };
@@ -214,7 +214,8 @@ namespace Mmo2d
 
                     if (update.ContainsInformation)
                     {
-                        AuthoritativePacketQueue.Enqueue(new AuthoritativePacket { GameStateDelta = update, GameState = (sent % 1000 == 0 ? GameStateClone : null), });
+                        sent++;
+                        AuthoritativePacketQueue.Enqueue(new AuthoritativePacket { GameStateDelta = update, GameState = (sent % 200 == 0 ? GameStateClone : null), });
                     }
 
                     var asleepend = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
@@ -222,7 +223,6 @@ namespace Mmo2d
                     var sleepFor = Tickrate - (asleepend - awakened);
 
                     Thread.Sleep(sleepFor.TotalMilliseconds > 0 ? sleepFor : TimeSpan.Zero);
-                    sent++;
                 }
             });
 
