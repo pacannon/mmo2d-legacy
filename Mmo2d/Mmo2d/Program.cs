@@ -22,7 +22,6 @@ namespace Example
 
         public static GameState GameState;
         public static Ui Ui;
-        public static TextureLoader TextureLoader;
        
         public static float CameraWidth { get; set; }
         public static float CameraHeight { get; set; }
@@ -37,18 +36,17 @@ namespace Example
 
             var playerController = new EntityController();
 
-            using (var game = new GameWindow())
+            using (var game = new GameWindow(750, 750))
             {
                 game.Load += (sender, e) =>
                 {
                     // setup settings, load textures, sounds
                     game.VSync = VSyncMode.On;
 
-                    TextureLoader = new TextureLoader();
-
                     Entity.CharacterTextureId = TextureLoader.LoadTexture(Mmo2d.Properties.Resources.roguelikeChar_transparent);
-
-                    Ui = new Ui(TextureLoader);
+                    Ui.TextureId = TextureLoader.LoadTexture(Mmo2d.Properties.Resources.UIpackSheet_transparent);
+                    
+                    Ui = new Ui();
                     GL.Enable(EnableCap.Texture2D);
                     GL.ClearColor(Color.ForestGreen);
                     GL.MatrixMode(MatrixMode.Projection);
