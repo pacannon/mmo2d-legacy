@@ -87,19 +87,19 @@ namespace Mmo2d
             var percentage = (float)(elapsed.TotalMilliseconds / total.TotalMilliseconds);
 
 
-            SpriteSheet.Ui[25][6].Render(Location - new Vector2(Width, 0.0f), Width, height);
-            SpriteSheet.Ui[25][7].Render(Location, Width, height);
-            SpriteSheet.Ui[25][8].Render(Location + new Vector2(Width, 0.0f), Width, height);
+            SpriteSheet.Ui[25][6].Render(Location - new Vector2(Width, 0.0f) - Vector2.Multiply(Vector2.UnitY, height), Width, height);
+            SpriteSheet.Ui[25][7].Render(Location - Vector2.Multiply(Vector2.UnitY, height), Width, height);
+            SpriteSheet.Ui[25][8].Render(Location + new Vector2(Width, 0.0f) - Vector2.Multiply(Vector2.UnitY, height), Width, height);
 
-            SpriteSheet.Ui[27][0].Render(Location - new Vector2(Width, 0.0f), Width, height, percentage / third);
+            SpriteSheet.Ui[27][0].Render(Location - new Vector2(Width, 0.0f) - Vector2.Multiply(Vector2.UnitY, height), Width, height, percentage / third);
 
             if (percentage >= third)
             {
-                SpriteSheet.Ui[27][1].Render(Location, Width, height, (percentage - third) / third);
+                SpriteSheet.Ui[27][1].Render(Location - Vector2.Multiply(Vector2.UnitY, height), Width, height, (percentage - third) / third);
 
                 if (percentage >= 2 * third)
                 {
-                    SpriteSheet.Ui[27][2].Render(Location + new Vector2(Width, 0.0f), Width, height, (percentage - 2 * third) / third);
+                    SpriteSheet.Ui[27][2].Render(Location + new Vector2(Width, 0.0f) - Vector2.Multiply(Vector2.UnitY, height), Width, height, (percentage - 2 * third) / third);
                 }
             }
 
