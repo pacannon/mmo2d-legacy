@@ -32,15 +32,15 @@ namespace Mmo2d
         public long Id { get; set; }
 
         public bool? IsGoblin { get; set; }
-        public bool SwordEquipped { get; set; }
 
         public Vector2 Location { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
         public TimeSpan? TimeSinceCastFireball { get; set; }
         public TimeSpan? TimeSinceAutoAttack { get; set; }
-
+        
         public long? TargetId { get; set; }
+
         public long? CastTargetId { get; set; }
 
         public int Kills { get; set; }
@@ -62,7 +62,7 @@ namespace Mmo2d
 
             RenderSprite(Row, Column, selected);
             
-            if (SwordEquipped && TargetId != null)
+            if (TargetId != null)
             {
                 RenderSprite(6, 43, selected);
             }
@@ -166,12 +166,13 @@ namespace Mmo2d
             }
 
             if ((TimeSinceAutoAttack == null || TimeSinceAutoAttack >= AutoAttackCooldown) && 
-                targetEntity != null && targetEntity.IsGoblin.GetValueOrDefault() && (targetEntity.Location - Location).Length <= MeleeRange)
+                targetEntity != null && IsFoe(targetEntity) && (targetEntity.Location - Location).Length <= MeleeRange)
             {
                 updates[Id].AutoAttack = true;
                 updates[Id].RemoveFireball = true;
 
                 updates[TargetId.Value].HpDelta = (updates[TargetId.Value].HpDelta.HasValue ? updates[TargetId.Value].HpDelta.Value : 0) - 2;
+                updates[TargetId.Value].SetTargetId = Id;
 
                 if (targetEntity.Hp + updates[targetEntity.Id].HpDelta < 1)
                 {
@@ -182,7 +183,7 @@ namespace Mmo2d
 
             if (EntityController[EntityController.States.CastFireball].ToggledOn && CastTargetId == null && TargetId != null)
             {
-                var targets = entities.Where(e => e.IsGoblin.GetValueOrDefault() && e.Id == TargetId);
+                var targets = entities.Where(e => (IsFoe(e)) && e.Id == TargetId);
                 Entity target = null;
 
                 if (targets.Count() > 0)
@@ -211,41 +212,56 @@ namespace Mmo2d
                 updates[Id].Died = true;
             }
 
-            updates[Id].Displacement = IncrementPosition();
+            updates[Id].Displacement = IncrementPosition(entities);
         }
 
-        public Vector2? IncrementPosition()
+        public Vector2? IncrementPosition(IEnumerable<Entity> entities)
         {
-            var displacementVector = Vector2.Zero;
-
-            if (EntityController[EntityController.States.MoveUp].OnOrToggled)
+            if (IsGoblin.GetValueOrDefault())
             {
-                displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(Vector2.UnitY, 0.644f));
+                var target = entities.FirstOrDefault(e => e.Id == TargetId);
+
+                if (TargetId != null && target != null)
+                {
+                    return Vector2.Multiply((target.Location - Location).Normalized(), Speed);
+                }
+
+                return null;
             }
 
-            if (EntityController[EntityController.States.MoveDown].OnOrToggled)
+            else
             {
-                displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(-Vector2.UnitY, 0.644f));
+                var displacementVector = Vector2.Zero;
+
+                if (EntityController[EntityController.States.MoveUp].OnOrToggled)
+                {
+                    displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(Vector2.UnitY, 0.644f));
+                }
+
+                if (EntityController[EntityController.States.MoveDown].OnOrToggled)
+                {
+                    displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(-Vector2.UnitY, 0.644f));
+                }
+
+                if (EntityController[EntityController.States.MoveLeft].OnOrToggled)
+                {
+                    displacementVector = Vector2.Add(displacementVector, -Vector2.UnitX);
+                }
+
+                if (EntityController[EntityController.States.MoveRight].OnOrToggled)
+                {
+                    displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
+                }
+
+                if (displacementVector != Vector2.Zero)
+                {
+                    displacementVector = Speed * displacementVector.Normalized();
+
+                    return displacementVector;
+                }
+
+                return null;
             }
-
-            if (EntityController[EntityController.States.MoveLeft].OnOrToggled)
-            {
-                displacementVector = Vector2.Add(displacementVector, -Vector2.UnitX);
-            }
-
-            if (EntityController[EntityController.States.MoveRight].OnOrToggled)
-            {
-                displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
-            }
-
-            if (displacementVector != Vector2.Zero)
-            {
-                displacementVector = Speed * displacementVector.Normalized();
-
-                return displacementVector;
-            }
-
-            return null;
         }
 
         public void ApplyUpdates(IEnumerable<EntityStateUpdate> updates, TimeSpan delta)
@@ -320,6 +336,7 @@ namespace Mmo2d
                 if (update.SetTargetId != null)
                 {
                     TargetId = update.SetTargetId;
+                    EntityController.TargetId = TargetId;
                 }
 
                 if (update.DeselectTarget != null)
@@ -344,7 +361,7 @@ namespace Mmo2d
 
         public bool Attacking(Entity entity)
         {
-            return entity.IsGoblin.GetValueOrDefault() && SwordEquipped && Overlapping(entity);
+            return (IsFoe(entity)) && Overlapping(entity);
         }
 
         public bool Overlapping(Entity entity)
@@ -362,6 +379,11 @@ namespace Mmo2d
         {
             var integer = unchecked((int)(Id));
             return integer < 0 ? -integer : integer;
+        }
+
+        public bool IsFoe(Entity potentialFoe)
+        {
+            return IsGoblin.GetValueOrDefault() != potentialFoe.IsGoblin.GetValueOrDefault();
         }
 
         [JsonIgnore]

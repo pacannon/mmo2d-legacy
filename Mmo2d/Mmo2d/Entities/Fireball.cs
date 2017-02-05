@@ -78,6 +78,7 @@ namespace Mmo2d.Entities
                 if (targetEntity.Overlapping(nextLocation.Value))
                 {
                     updates[targetEntity.Id].HpDelta = (updates[targetEntity.Id].HpDelta.HasValue ? updates[targetEntity.Id].HpDelta.Value : 0) - damage;
+                    updates[targetEntity.Id].SetTargetId = LauncherId;
                     updates[Id].RemoveFireball = true;
 
                     if (targetEntity.Hp + updates[targetEntity.Id].HpDelta < 1)

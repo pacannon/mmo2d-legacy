@@ -83,7 +83,7 @@ namespace Mmo2d
                                         //UpdateConnectionsList();
                                         var remoteUniqueIdentifier = im.SenderConnection.RemoteUniqueIdentifier;
 
-                                        UserCommandQueue.Enqueue(new UserCommand { CreateEntity = new Entity { Id = remoteUniqueIdentifier, SwordEquipped = true, Hp = 10, } });
+                                        UserCommandQueue.Enqueue(new UserCommand { CreateEntity = new Entity { Id = remoteUniqueIdentifier, Hp = 10, } });
 
                                         NetOutgoingMessage om = NetServer.CreateMessage();
                                         var authoritativePacket = new AuthoritativePacket() { IdIssuance = remoteUniqueIdentifier, };

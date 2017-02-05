@@ -100,7 +100,7 @@ namespace Mmo2d
 
             Entities = Entities.OrderBy(e => e.Location.X).OrderByDescending(e => e.Location.Y).ToList();
 
-            foreach (var entity in Entities.Where(e => !(Entities.Select(t => t.Id).Contains(e.TargetId.GetValueOrDefault()))))
+            foreach (var entity in Entities.Where(e => e.TargetId.HasValue && !(Entities.Select(t => t.Id).Contains(e.TargetId.Value))))
             {
                 entity.TargetId = null;
             }
