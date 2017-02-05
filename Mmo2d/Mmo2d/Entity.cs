@@ -223,7 +223,14 @@ namespace Mmo2d
 
                 if (TargetId != null && target != null)
                 {
-                    return Vector2.Multiply((target.Location - Location).Normalized(), Speed);
+                    var displacement = target.Location - Location;
+
+                    var keepDistance = MeleeRange * 0.8f;
+
+                    if (displacement.Length > keepDistance)
+                    {
+                        return Vector2.Multiply(displacement.Normalized(), Math.Min(Speed, keepDistance));
+                    }
                 }
 
                 return null;
