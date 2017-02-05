@@ -17,7 +17,6 @@ namespace Mmo2d.Controller
             MoveLeft,
             MoveRight,
             Jump,
-            Attack,
             CastFireball,
         }
 
@@ -79,11 +78,6 @@ namespace Mmo2d.Controller
                         clone[States.CastFireball].On = keyEventArgs.KeyDown;
                         break;
                 }
-            }
-
-            if (userCommand.MousePressed.HasValue)
-            {
-                clone[States.Attack].On = userCommand.MousePressed.Value;
             }
 
             if (userCommand.DeselectTarget.HasValue)

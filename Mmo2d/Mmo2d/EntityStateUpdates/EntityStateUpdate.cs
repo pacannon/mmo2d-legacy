@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using OpenTK;
 
-namespace Mmo2d
+namespace Mmo2d.EntityStateUpdates
 {
     public class EntityStateUpdate
     {
@@ -35,6 +35,7 @@ namespace Mmo2d
         public bool? DeselectTarget { get; set; }
 
         public long? StartCastFireball { get;  set; }
+        public bool? AutoAttack { get; set; }
 
         [JsonIgnore]
         public bool ContainsInformation
@@ -43,7 +44,7 @@ namespace Mmo2d
             {
                 return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
                     HpDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue || AddFireball != null || RemoveFireball.HasValue || 
-                    SetTargetId.HasValue || DeselectTarget.HasValue || StartCastFireball.HasValue;
+                    SetTargetId.HasValue || DeselectTarget.HasValue || StartCastFireball.HasValue || AutoAttack.HasValue;
             }
         }
     }

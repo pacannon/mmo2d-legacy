@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using Mmo2d.EntityStateUpdates;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace Mmo2d
 {
     public class GameStateDelta
     {
-        public List<EntityStateUpdate> EntityStateUpdates { get; set; }
+        public AggregateEntityStateUpdate AggregateEntityStateUpdate { get; set; }
         public List<long> EntitiesToRemove { get; set; }
         public List<Entity> EntitiesToAdd { get; set; }
 
@@ -14,20 +15,20 @@ namespace Mmo2d
         {
             get
             {
-                return EntityStateUpdates.Count + EntitiesToRemove.Count + EntitiesToAdd.Count > 0;
+                return AggregateEntityStateUpdate.Count + EntitiesToRemove.Count + EntitiesToAdd.Count > 0;
             }
         }
 
         public GameStateDelta()
         {
-            EntityStateUpdates = new List<EntityStateUpdate>();
+            AggregateEntityStateUpdate = new AggregateEntityStateUpdate();
             EntitiesToRemove = new List<long>();
             EntitiesToAdd = new List<Entity>();
         }
 
         public bool ShouldSerializeEntityStateUpdates()
         {
-            return (EntityStateUpdates.Count != 0);
+            return (AggregateEntityStateUpdate.Count != 0);
         }
 
         public bool ShouldSerializeEntitiesToRemove()

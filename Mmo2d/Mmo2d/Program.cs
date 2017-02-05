@@ -128,14 +128,12 @@ namespace Example
 
                 game.MouseDown += (sender, e) =>
                 {
-                    var userCommand = new UserCommand() { MousePressed = e.IsPressed, };
-
                     var bottomLeftOfScreen = CameraBottomLeft();
                     var clicked = new Vector2 { X = ((float)e.Position.X / (float)game.Width) * CameraWidth, Y = CameraHeight - ((float)e.Position.Y / (float)game.Height) * CameraHeight };
 
                     var setTargetTo = GameState.TargetId(clicked + bottomLeftOfScreen);
-
-                    userCommand.SetTargetId = setTargetTo;
+                    
+                    var userCommand = new UserCommand() { SetTargetId = setTargetTo, };
 
                     if (setTargetTo == null && playerController.TargetId.HasValue)
                     {
@@ -149,11 +147,9 @@ namespace Example
 
                 game.MouseUp += (sender, e) =>
                 {
-                    var userCommand = new UserCommand() { MousePressed = e.IsPressed, };
+                    //playerController = playerController.ApplyUserCommand(userCommand);
 
-                    playerController = playerController.ApplyUserCommand(userCommand);
-
-                    Server.QueueUserCommand(userCommand);
+                    //Server.QueueUserCommand(userCommand);
                 };
 
                 // Run the game at 60 updates per second

@@ -63,7 +63,8 @@
     <Compile Include="Dictionary.cs" />
     <Compile Include="Entities\Fireball.cs" />
     <Compile Include="Entity.cs" />
-    <Compile Include="EntityStateUpdate.cs" />
+    <Compile Include="EntityStateUpdates\AggregateEntityStateUpdate.cs" />
+    <Compile Include="EntityStateUpdates\EntityStateUpdate.cs" />
     <Compile Include="GameStateDelta.cs" />
     <Compile Include="GoblinSpawner.cs" />
     <Compile Include="IServer.cs" />

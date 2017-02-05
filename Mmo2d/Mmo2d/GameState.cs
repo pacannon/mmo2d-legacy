@@ -1,5 +1,6 @@
 ﻿using Mmo2d.Controller;
 using Mmo2d.Entities;
+using Mmo2d.EntityStateUpdates;
 using Newtonsoft.Json;
 using OpenTK;
 using System;
@@ -44,29 +45,26 @@ namespace Mmo2d
             var gameStateDelta = new GameStateDelta();
 
             var entitiesCopy = Entities.ToList();
-            var updates = new List<EntityStateUpdate>();
+            var updates = new AggregateEntityStateUpdate();
 
             foreach (var entity in entitiesCopy)
             {
-                var generatedUpdates = entity.GenerateUpdates(Entities, Random);
-
-                updates.AddRange(generatedUpdates);
+                entity.GenerateUpdates(Entities, updates, Random);
             }
 
             foreach (var fireball in Fireballs)
             {
-                var generatedupdates = fireball.GenerateUpdates(delta, entitiesCopy);
-                updates.AddRange(generatedupdates);
+                fireball.GenerateUpdates(delta, entitiesCopy, updates);
             }
 
-            gameStateDelta.EntitiesToRemove.AddRange(updates.Where(e => e.Died != null).Select(e => e.EntityId));
+            gameStateDelta.EntitiesToRemove.AddRange(updates.Select(u => u.Value).Where(e => e.Died != null).Select(e => e.EntityId));
 
             if (GoblinSpawner != null)
             {
                 gameStateDelta.EntitiesToAdd.AddRange(GoblinSpawner.Update(delta, Entities));
             }
             
-            gameStateDelta.EntityStateUpdates.AddRange(updates);
+            gameStateDelta.AggregateEntityStateUpdate = updates;
 
             return gameStateDelta;
         }
@@ -76,14 +74,14 @@ namespace Mmo2d
             Entities.AddRange(updates.SelectMany(u => u.EntitiesToAdd));
 
             var entitiesCopy = Entities.ToList();
-            var entityStateUpdates = updates.SelectMany(u => u.EntityStateUpdates);
+            var entityStateUpdates = updates.SelectMany(u => u.AggregateEntityStateUpdate);
 
             foreach (var entity in entitiesCopy)
             {
-                entity.ApplyUpdates(entityStateUpdates.Where(u => u.EntityId == entity.Id), delta);
+                entity.ApplyUpdates(entityStateUpdates.Where(u => u.Key == entity.Id).Select(u => u.Value), delta);
             }
 
-            foreach (var newFireball in entityStateUpdates.Where(u => u.AddFireball != null).Select(u => u.AddFireball))
+            foreach (var newFireball in entityStateUpdates.Where(u => u.Value.AddFireball != null).Select(u => u.Value.AddFireball))
             {
                 Fireballs.Add(newFireball);
             }
@@ -93,14 +91,19 @@ namespace Mmo2d
                 fireball.ApplyUpdate(delta, entitiesCopy);
             }
 
-            foreach (var removeId in entityStateUpdates.Where(u => u.RemoveFireball != null))
+            foreach (var removeId in entityStateUpdates.Where(u => u.Value.RemoveFireball != null))
             {
-                Fireballs.RemoveAll(f => f.Id == removeId.EntityId);
+                Fireballs.RemoveAll(f => f.Id == removeId.Value.EntityId);
             }
 
             var removed = Entities.RemoveAll(e => updates.SelectMany(u => u.EntitiesToRemove).Contains(e.Id));
 
             Entities = Entities.OrderBy(e => e.Location.X).OrderByDescending(e => e.Location.Y).ToList();
+
+            foreach (var entity in Entities.Where(e => !(Entities.Select(t => t.Id).Contains(e.TargetId.GetValueOrDefault()))))
+            {
+                entity.TargetId = null;
+            }
         }
 
         public GameState Clone()

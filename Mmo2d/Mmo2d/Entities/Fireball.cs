@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Mmo2d.EntityStateUpdates;
+using Newtonsoft.Json;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
@@ -66,10 +67,8 @@ namespace Mmo2d.Entities
             GL.Disable(EnableCap.LineSmooth);
         }
 
-        public IEnumerable<EntityStateUpdate> GenerateUpdates(TimeSpan delta, List<Entity> entities)
+        public void GenerateUpdates(TimeSpan delta, List<Entity> entities, AggregateEntityStateUpdate updates)
         {
-            var updates = new List<EntityStateUpdate>();
-
             var nextLocation = NextLocation(delta, entities);
 
             if (nextLocation != null)
@@ -78,25 +77,21 @@ namespace Mmo2d.Entities
 
                 if (targetEntity.Overlapping(nextLocation.Value))
                 {
-                    updates.Add(new EntityStateUpdate(targetEntity.Id) { HpDelta = -damage, });
-                    updates.Add(new EntityStateUpdate(Id) { RemoveFireball = true, });
+                    updates[targetEntity.Id].HpDelta = (updates[targetEntity.Id].HpDelta.HasValue ? updates[targetEntity.Id].HpDelta.Value : 0) - damage;
+                    updates[Id].RemoveFireball = true;
 
-                    if (targetEntity.Hp - damage < 1)
+                    if (targetEntity.Hp + updates[targetEntity.Id].HpDelta < 1)
                     {
-                        updates.Add(new EntityStateUpdate(targetEntity.Id) { Died = true, });
-
-                        updates.Add(new EntityStateUpdate(LauncherId) { KillsDelta = 1, });
-
+                        updates[targetEntity.Id].Died = true;
+                        updates[LauncherId].KillsDelta = (updates[LauncherId].KillsDelta.HasValue ? updates[LauncherId].KillsDelta.Value : 0) + 1;
                     }
                 }
             }
 
             else
             {
-                updates.Add(new EntityStateUpdate(Id) { RemoveFireball = true, });
+                updates[Id].RemoveFireball = true;
             }
-
-            return updates;
         }
 
         public void ApplyUpdate(TimeSpan delta, IEnumerable<Entity> entities) 

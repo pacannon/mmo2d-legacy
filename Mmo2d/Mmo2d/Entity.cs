@@ -9,6 +9,7 @@ using Mmo2d.Controller;
 using Newtonsoft.Json;
 using Mmo2d.Entities;
 using Mmo2d.Textures;
+using Mmo2d.EntityStateUpdates;
 
 namespace Mmo2d
 {
@@ -20,10 +21,12 @@ namespace Mmo2d
         public const float width = 1.0f;
         public const float height = 1.0f;
         public const float HalfAcceration = -9.81f / 2.0f;
+        public const float MeleeRange = 1.5f;
 
-        public static readonly TimeSpan SwingSwordAnimationDuration = TimeSpan.FromMilliseconds(500.0);
+        public static readonly TimeSpan AutoAttackPeriod = TimeSpan.FromMilliseconds(200.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
         public static readonly TimeSpan CastFireballCooldown = TimeSpan.FromMilliseconds(200.0);
+        public static readonly TimeSpan AutoAttackCooldown = TimeSpan.FromMilliseconds(2000.0);
         public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
 
         public long Id { get; set; }
@@ -32,10 +35,10 @@ namespace Mmo2d
         public bool SwordEquipped { get; set; }
 
         public Vector2 Location { get; set; }
-        public TimeSpan? TimeSinceAttackInitiated { get; set; }
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
         public TimeSpan? TimeSinceCastFireball { get; set; }
+        public TimeSpan? TimeSinceAutoAttack { get; set; }
 
         public long? TargetId { get; set; }
         public long? CastTargetId { get; set; }
@@ -59,7 +62,7 @@ namespace Mmo2d
 
             RenderSprite(Row, Column, selected);
             
-            if (SwordEquipped && TimeSinceAttackInitiated != null)
+            if (SwordEquipped && TargetId != null)
             {
                 RenderSprite(6, 43, selected);
             }
@@ -145,50 +148,36 @@ namespace Mmo2d
             EntityController = EntityController.ApplyUserCommand(userCommand);
         }
 
-        public IEnumerable<EntityStateUpdate> GenerateUpdates(IEnumerable<Entity> entities, Random random)
+        public void GenerateUpdates(IEnumerable<Entity> entities, AggregateEntityStateUpdate updates, Random random)
         {
-            var updates = new List<EntityStateUpdate>();
-            var generalUpdate = new EntityStateUpdate(Id);
-
-            if (TimeSinceAttackInitiated != null || ((EntityController[EntityController.States.Attack].OnOrToggled) && SwordEquipped))
-            {
-                if (TimeSinceAttackInitiated == null)
-                { 
-                    if (TimeSinceAttackInitiated == null && SwordEquipped)
-                    {
-                        generalUpdate.AttackInitiated = true;
-                    }
-                }
-
-                foreach (var attackedEntity in entities.Where(e => Attacking(e)))
-                {
-                    updates.Add(new EntityStateUpdate(attackedEntity.Id) { HpDelta = -1 });
-
-                    if (attackedEntity.Hp < 1)
-                    {
-                        updates.Add(new EntityStateUpdate(attackedEntity.Id) { Died = true, });
-
-                        if (generalUpdate.KillsDelta == null)
-                        {
-                            generalUpdate.KillsDelta = 0;
-                        }
-
-                        generalUpdate.KillsDelta++;
-                    }
-                }
-            }
+            var targetEntity = entities.FirstOrDefault(e => e.Id == TargetId);
 
             if (EntityController[EntityController.States.Jump].ToggledOn && TimeSinceJump == null)
             {
-                generalUpdate.Jumped = true;
+                updates[Id].Jumped = true;
             }
 
             if (TimeSinceCastFireball == null && CastTargetId != null)
             {
                 // Todo: Give Fireball age of timeSince - castTime
-                updates.Add(new EntityStateUpdate(Id) { AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id) });
+                updates[Id].AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id);
 
                 CastTargetId = null;
+            }
+
+            if ((TimeSinceAutoAttack == null || TimeSinceAutoAttack >= AutoAttackCooldown) && 
+                targetEntity != null && targetEntity.IsGoblin.GetValueOrDefault() && (targetEntity.Location - Location).Length <= MeleeRange)
+            {
+                updates[Id].AutoAttack = true;
+                updates[Id].RemoveFireball = true;
+
+                updates[TargetId.Value].HpDelta = (updates[TargetId.Value].HpDelta.HasValue ? updates[TargetId.Value].HpDelta.Value : 0) - 2;
+
+                if (targetEntity.Hp + updates[targetEntity.Id].HpDelta < 1)
+                {
+                    updates[targetEntity.Id].Died = true;
+                    updates[Id].KillsDelta = (updates[Id].KillsDelta.HasValue ? updates[Id].KillsDelta.Value : 0) + 1;
+                }
             }
 
             if (EntityController[EntityController.States.CastFireball].ToggledOn && CastTargetId == null && TargetId != null)
@@ -203,33 +192,26 @@ namespace Mmo2d
 
                 if (target != null)
                 {
-                    updates.Add(new EntityStateUpdate(Id) { StartCastFireball = target.Id, });
+                    updates[Id].StartCastFireball = target.Id;
                 }
             }
 
             if (EntityController.TargetId != TargetId)
             {
-                generalUpdate.SetTargetId = EntityController.TargetId;
+                updates[Id].SetTargetId = EntityController.TargetId;
 
-                if (generalUpdate.SetTargetId == null)
+                if (updates[Id].SetTargetId == null)
                 {
-                    generalUpdate.DeselectTarget = true;
+                    updates[Id].DeselectTarget = true;
                 }
             }
 
             if (TimeSinceDeath != null)
             {
-                generalUpdate.Died = true;
+                updates[Id].Died = true;
             }
 
-            generalUpdate.Displacement = IncrementPosition();
-
-            if (generalUpdate.ContainsInformation)
-            {
-                updates.Add(generalUpdate);
-            }
-
-            return updates;
+            updates[Id].Displacement = IncrementPosition();
         }
 
         public Vector2? IncrementPosition()
@@ -283,16 +265,6 @@ namespace Mmo2d
                 }
             }
 
-            if (TimeSinceAttackInitiated != null)
-            {
-                TimeSinceAttackInitiated += delta;
-
-                if (TimeSinceAttackInitiated > SwingSwordAnimationDuration)
-                {
-                    TimeSinceAttackInitiated = null;
-                }
-            }
-
             if (TimeSinceCastFireball != null)
             {
                 TimeSinceCastFireball += delta;
@@ -300,6 +272,16 @@ namespace Mmo2d
                 if (TimeSinceCastFireball > Fireball.CastTime)
                 {
                     TimeSinceCastFireball = null;
+                }
+            }
+
+            if (TimeSinceAutoAttack != null)
+            {
+                TimeSinceAutoAttack += delta;
+
+                if (TimeSinceAutoAttack > Fireball.CastTime)
+                {
+                    TimeSinceAutoAttack = null;
                 }
             }
 
@@ -318,11 +300,6 @@ namespace Mmo2d
                 if (update.Jumped != null)
                 {
                     TimeSinceJump = TimeSpan.Zero;
-                }
-
-                if (update.AttackInitiated != null)
-                {
-                    TimeSinceAttackInitiated = TimeSpan.Zero;
                 }
 
                 if (update.KillsDelta != null)
@@ -354,6 +331,11 @@ namespace Mmo2d
                 {
                     CastTargetId = update.StartCastFireball.Value;
                     TimeSinceCastFireball = TimeSpan.Zero;
+                }
+
+                if (update.AutoAttack != null)
+                {
+                    TimeSinceAutoAttack = TimeSpan.Zero;
                 }
             }
 
