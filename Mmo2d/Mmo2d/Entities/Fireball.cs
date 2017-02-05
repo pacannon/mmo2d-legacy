@@ -119,11 +119,18 @@ namespace Mmo2d.Entities
 
             if (targetEntity != null)
             {
-                var t_squared = (0.03f) * ((float)Age.TotalSeconds * (float)Age.TotalSeconds);
+                var t_squared = ((float)Age.TotalSeconds * (float)Age.TotalSeconds);
 
-                var direction = (targetEntity.Location - Location).Normalized();
+                var displacement = (targetEntity.Location - Location);
 
-                var newLocation = Location + Vector2.Multiply(direction, 0.04f) + Vector2.Multiply(direction, 10.0f * t_squared);
+                var direction = displacement.Normalized();
+
+                var newLocation = Location + Vector2.Multiply(direction, 0.04f + 0.3f * t_squared);
+
+                if ((newLocation - Location).Length > (targetEntity.Location - Location).Length)
+                {
+                    newLocation = targetEntity.Location;
+                }
 
                 return newLocation;
             }

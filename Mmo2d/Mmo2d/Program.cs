@@ -38,6 +38,8 @@ namespace Example
 
             using (var game = new GameWindow(750, 750))
             {
+                //game.CursorVisible = false;
+
                 game.Load += (sender, e) =>
                 {
                     // setup settings, load textures, sounds
@@ -93,7 +95,7 @@ namespace Example
                         GameState.Render(playerController);
                     }
 
-                    Ui.Render(playerEntity, game.Width, game.Height);
+                    Ui.Render(playerEntity, game);
 
                     game.SwapBuffers();
                 };
@@ -150,6 +152,11 @@ namespace Example
                     //playerController = playerController.ApplyUserCommand(userCommand);
 
                     //Server.QueueUserCommand(userCommand);
+                };
+
+                game.MouseWheel += (sender, e) =>
+                {
+                    CameraWidth = (CameraHeight -= e.Delta);
                 };
 
                 // Run the game at 60 updates per second

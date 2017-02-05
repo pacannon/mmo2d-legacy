@@ -5,6 +5,8 @@ using System.Drawing.Text;
 using System.Drawing.Drawing2D;
 using System.IO;
 using Mmo2d.Textures;
+using OpenTK;
+using OpenTK.Input;
 
 namespace Mmo2d
 {
@@ -39,14 +41,19 @@ namespace Mmo2d
             GenerateFontImage();
         }
 
-        public void Render(Entity playerEntity, int width, int height)
+        public void Render(Entity playerEntity, GameWindow game)
         {
             if (playerEntity == null)
             {
                 return;
             }
 
-            DrawText(10, 10, playerEntity.Kills.ToString(), width, height);
+            DrawText(10, 10, playerEntity.Kills.ToString(), game.Width, game.Height);
+
+            //var mouseState = game.Mouse;
+
+            //var size = 50.0f;
+            //SpriteSheet.Ui[25][9].Render(new Vector2(mouseState.X + size/2, game.Height - mouseState.Y - size/2), size, size);
         }
 
         public void DrawText(int x, int y, string text, int gameWidth, int gameHeight)

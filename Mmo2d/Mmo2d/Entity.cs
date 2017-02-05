@@ -116,20 +116,19 @@ namespace Mmo2d
             const float third = (1.0f / 3.0f);
             var percentage = (float)((float)Hp/MaximumHp);
 
+            SpriteSheet.Ui[25][6].Render(Location - new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height + Height), Width, height);
+            SpriteSheet.Ui[25][7].Render(Location + Vector2.Multiply(Vector2.UnitY, height + Height), Width, height);
+            SpriteSheet.Ui[25][8].Render(Location + new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height + Height), Width, height);
 
-            SpriteSheet.Ui[25][6].Render(Location - new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height), Width, height);
-            SpriteSheet.Ui[25][7].Render(Location + Vector2.Multiply(Vector2.UnitY, height), Width, height);
-            SpriteSheet.Ui[25][8].Render(Location + new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height), Width, height);
-
-            SpriteSheet.Ui[27][6].Render(Location - new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height), Width, height, percentage / third);
+            SpriteSheet.Ui[27][6].Render(Location - new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height + Height), Width, height, percentage / third);
 
             if (percentage >= third)
             {
-                SpriteSheet.Ui[27][7].Render(Location + Vector2.Multiply(Vector2.UnitY, height), Width, height, (percentage - third) / third);
+                SpriteSheet.Ui[27][7].Render(Location + Vector2.Multiply(Vector2.UnitY, height + Height), Width, height, (percentage - third) / third);
 
                 if (percentage >= 2 * third)
                 {
-                    SpriteSheet.Ui[27][8].Render(Location + new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height), Width, height, (percentage - 2 * third) / third);
+                    SpriteSheet.Ui[27][8].Render(Location + new Vector2(Width, 0.0f) + Vector2.Multiply(Vector2.UnitY, height + Height), Width, height, (percentage - 2 * third) / third);
                 }
             }
 

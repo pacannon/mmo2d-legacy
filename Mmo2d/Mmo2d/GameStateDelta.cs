@@ -1,6 +1,7 @@
 ﻿using Mmo2d.EntityStateUpdates;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Mmo2d
 {
@@ -15,7 +16,7 @@ namespace Mmo2d
         {
             get
             {
-                return AggregateEntityStateUpdate.Count + EntitiesToRemove.Count + EntitiesToAdd.Count > 0;
+                return ShouldSerializeAggregateEntityStateUpdate() || (EntitiesToRemove.Count + EntitiesToAdd.Count > 0);
             }
         }
 
@@ -26,9 +27,9 @@ namespace Mmo2d
             EntitiesToAdd = new List<Entity>();
         }
 
-        public bool ShouldSerializeEntityStateUpdates()
+        public bool ShouldSerializeAggregateEntityStateUpdate()
         {
-            return (AggregateEntityStateUpdate.Count != 0);
+            return (AggregateEntityStateUpdate.Any(u => u.Value.ContainsInformation));
         }
 
         public bool ShouldSerializeEntitiesToRemove()
