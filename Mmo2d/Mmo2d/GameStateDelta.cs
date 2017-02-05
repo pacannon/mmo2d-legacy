@@ -29,7 +29,8 @@ namespace Mmo2d
 
         public bool ShouldSerializeAggregateEntityStateUpdate()
         {
-            return (AggregateEntityStateUpdate.Any(u => u.Value.ContainsInformation));
+            var should = (AggregateEntityStateUpdate.Any(u => u.Value.ContainsInformation));
+            return should;
         }
 
         public bool ShouldSerializeEntitiesToRemove()

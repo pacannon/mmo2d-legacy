@@ -211,7 +211,12 @@ namespace Mmo2d
                 updates[Id].Died = true;
             }
 
-            updates[Id].Displacement = IncrementPosition(entities);
+            var displacement = IncrementPosition(entities);
+
+            if (displacement != null)
+            {
+                updates[Id].Displacement = displacement;
+            }
         }
 
         public Vector2? IncrementPosition(IEnumerable<Entity> entities)

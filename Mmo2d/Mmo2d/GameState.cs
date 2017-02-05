@@ -102,7 +102,7 @@ namespace Mmo2d
 
             foreach (var entity in Entities.Where(e => e.TargetId.HasValue && !(Entities.Select(t => t.Id).Contains(e.TargetId.Value))))
             {
-                entity.TargetId = null;
+                entity.EntityController.TargetId = null;
             }
         }
 
