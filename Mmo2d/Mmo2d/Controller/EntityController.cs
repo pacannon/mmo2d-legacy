@@ -18,6 +18,7 @@ namespace Mmo2d.Controller
             MoveRight,
             Jump,
             CastFireball,
+            CastFrostbolt,
         }
 
         public EntityController()
@@ -76,6 +77,10 @@ namespace Mmo2d.Controller
 
                     case OpenTK.Input.Key.E:
                         clone[States.CastFireball].On = keyEventArgs.KeyDown;
+                        break;
+
+                    case OpenTK.Input.Key.Q:
+                        clone[States.CastFrostbolt].On = keyEventArgs.KeyDown;
                         break;
                 }
             }

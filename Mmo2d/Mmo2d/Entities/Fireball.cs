@@ -14,9 +14,10 @@ namespace Mmo2d.Entities
         public const float width = 0.2f;
         public const float height = 0.2f;
         public const float radius = 0.05f;
-        public static readonly TimeSpan CastTime = TimeSpan.FromSeconds(3.0);
-        public const int damage = 6;
-        
+        public static readonly TimeSpan CastTime = TimeSpan.FromSeconds(0.667);
+        public const int damage = 2;
+        public const float Range = 10;
+
         [JsonIgnore]
         public float LeftEdge { get { return Location.X - width / 2.0f; } }
         [JsonIgnore]
@@ -77,11 +78,11 @@ namespace Mmo2d.Entities
 
                 if (targetEntity.Overlapping(nextLocation.Value))
                 {
-                    updates[targetEntity.Id].HpDelta = (updates[targetEntity.Id].HpDelta.HasValue ? updates[targetEntity.Id].HpDelta.Value : 0) - damage;
+                    updates[targetEntity.Id].HpDeltas.Add(-damage);
                     updates[targetEntity.Id].SetTargetId = LauncherId;
                     updates[Id].RemoveFireball = true;
 
-                    if (targetEntity.Hp + updates[targetEntity.Id].HpDelta < 1)
+                    if (targetEntity.Hp + updates[targetEntity.Id].HpDeltas.Sum() < 1)
                     {
                         updates[targetEntity.Id].Died = true;
                         updates[LauncherId].KillsDelta = (updates[LauncherId].KillsDelta.HasValue ? updates[LauncherId].KillsDelta.Value : 0) + 1;

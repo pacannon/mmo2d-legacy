@@ -22,11 +22,13 @@ namespace Mmo2d
         public const float height = 1.0f;
         public const float HalfAcceration = -9.81f / 2.0f;
         public const float MeleeRange = 1.5f;
+        public const int HpRegen = 2;
 
         public static readonly TimeSpan AutoAttackPeriod = TimeSpan.FromMilliseconds(200.0);
         public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
         public static readonly TimeSpan CastFireballCooldown = TimeSpan.FromMilliseconds(200.0);
         public static readonly TimeSpan AutoAttackCooldown = TimeSpan.FromMilliseconds(2000.0);
+        public static readonly TimeSpan HpRegenTime = TimeSpan.FromMilliseconds(5000);
         public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
 
         public long Id { get; set; }
@@ -37,8 +39,10 @@ namespace Mmo2d
         public TimeSpan? TimeSinceDeath { get; private set; }
         public TimeSpan? TimeSinceJump { get; set; }
         public TimeSpan? TimeSinceCastFireball { get; set; }
+        public TimeSpan? TimeSinceCastFrostbolt { get; set; }        
         public TimeSpan? TimeSinceAutoAttack { get; set; }
-        
+        public TimeSpan TimeSinceLastHealthRegen { get; set; }
+
         public long? TargetId { get; set; }
 
         public long? CastTargetId { get; set; }
@@ -76,6 +80,11 @@ namespace Mmo2d
             if (TimeSinceCastFireball != null)
             {
                 RenderCastBar(TimeSinceCastFireball.Value, Fireball.CastTime);
+            }
+
+            if (TimeSinceCastFrostbolt != null)
+            {
+                RenderCastBar(TimeSinceCastFrostbolt.Value, Fireball.CastTime);
             }
 
             if (selected)
@@ -164,16 +173,24 @@ namespace Mmo2d
                 CastTargetId = null;
             }
 
+            if (TimeSinceCastFrostbolt == null && CastTargetId != null)
+            {
+                // Todo: Give Fireball age of timeSince - castTime
+                updates[Id].AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id);
+
+                CastTargetId = null;
+            }
+
             if ((TimeSinceAutoAttack == null || TimeSinceAutoAttack >= AutoAttackCooldown) && 
                 targetEntity != null && IsFoe(targetEntity) && (targetEntity.Location - Location).Length <= MeleeRange)
             {
                 updates[Id].AutoAttack = true;
                 updates[Id].RemoveFireball = true;
 
-                updates[TargetId.Value].HpDelta = (updates[TargetId.Value].HpDelta.HasValue ? updates[TargetId.Value].HpDelta.Value : 0) - 2;
+                updates[TargetId.Value].HpDeltas.Add(-2);
                 updates[TargetId.Value].SetTargetId = Id;
 
-                if (targetEntity.Hp + updates[targetEntity.Id].HpDelta < 1)
+                if (targetEntity.Hp + updates[targetEntity.Id].HpDeltas.Sum() < 1)
                 {
                     updates[targetEntity.Id].Died = true;
                     updates[Id].KillsDelta = (updates[Id].KillsDelta.HasValue ? updates[Id].KillsDelta.Value : 0) + 1;
@@ -190,9 +207,25 @@ namespace Mmo2d
                     target = targets.First();
                 }
 
-                if (target != null)
+                if (target != null && (target.Location - Location).Length <= Fireball.Range)
                 {
                     updates[Id].StartCastFireball = target.Id;
+                }
+            }
+
+            if (EntityController[EntityController.States.CastFrostbolt].ToggledOn && CastTargetId == null && TargetId != null)
+            {
+                var targets = entities.Where(e => (IsFoe(e)) && e.Id == TargetId);
+                Entity target = null;
+
+                if (targets.Count() > 0)
+                {
+                    target = targets.First();
+                }
+
+                if (target != null && (target.Location - Location).Length <= Fireball.Range)
+                {
+                    updates[Id].StartCastFrostbolt = target.Id;
                 }
             }
 
@@ -295,10 +328,20 @@ namespace Mmo2d
             if (TimeSinceCastFireball != null)
             {
                 TimeSinceCastFireball += delta;
-                
+
                 if (TimeSinceCastFireball > Fireball.CastTime)
                 {
                     TimeSinceCastFireball = null;
+                }
+            }
+
+            if (TimeSinceCastFrostbolt != null)
+            {
+                TimeSinceCastFrostbolt += delta;
+
+                if (TimeSinceCastFrostbolt > Fireball.CastTime)
+                {
+                    TimeSinceCastFrostbolt = null;
                 }
             }
 
@@ -309,6 +352,17 @@ namespace Mmo2d
                 if (TimeSinceAutoAttack > Fireball.CastTime)
                 {
                     TimeSinceAutoAttack = null;
+                }
+            }
+
+            if (TimeSinceLastHealthRegen != null)
+            {
+                TimeSinceLastHealthRegen += delta;
+
+                while (TimeSinceLastHealthRegen >= HpRegenTime)
+                {
+                    TimeSinceLastHealthRegen = TimeSpan.Zero + (TimeSinceLastHealthRegen - HpRegenTime);
+                    Hp = Math.Min(Hp + HpRegen, MaximumHp);
                 }
             }
 
@@ -334,14 +388,14 @@ namespace Mmo2d
                     Kills += update.KillsDelta.Value;
                 }
 
-                if (update.HpDelta != null)
+                if (update.HpDeltas.Any())
                 {
-                    Hp += update.HpDelta.Value;
-                }
+                    Hp = Math.Min(Hp + update.HpDeltas.Sum(), MaximumHp);
 
-                if (update.CastFireball != null)
-                {
-                    TimeSinceCastFireball = TimeSpan.Zero;
+                    if (update.HpDeltas.Any(d => d < 0))
+                    {
+                        TimeSinceLastHealthRegen = TimeSpan.Zero;
+                    }
                 }
 
                 if (update.SetTargetId != null)
@@ -359,6 +413,12 @@ namespace Mmo2d
                 {
                     CastTargetId = update.StartCastFireball.Value;
                     TimeSinceCastFireball = TimeSpan.Zero;
+                }
+
+                if (update.StartCastFrostbolt != null)
+                {
+                    CastTargetId = update.StartCastFrostbolt.Value;
+                    TimeSinceCastFrostbolt = TimeSpan.Zero;
                 }
 
                 if (update.AutoAttack != null)

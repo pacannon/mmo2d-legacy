@@ -1,6 +1,8 @@
 ﻿using Mmo2d.Entities;
 using Newtonsoft.Json;
 using OpenTK;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Mmo2d.EntityStateUpdates
 {
@@ -10,6 +12,7 @@ namespace Mmo2d.EntityStateUpdates
 
         protected EntityStateUpdate()
         {
+            HpDeltas = new List<int>();
         }
 
         public EntityStateUpdate(long entityId) : this()
@@ -21,9 +24,8 @@ namespace Mmo2d.EntityStateUpdates
         public bool? Died { get; set; }
         public bool? Jumped { get; set; }
         public bool? AttackInitiated { get; set; }
-        public long? CastFireball { get; set; }
 
-        public int? HpDelta { get; set; }
+        public List<int> HpDeltas { get; set; }
         public int? KillsDelta { get; set; }
 
         // Merge this into game state update
@@ -34,7 +36,8 @@ namespace Mmo2d.EntityStateUpdates
         public long? SetTargetId { get; set; }
         public bool? DeselectTarget { get; set; }
 
-        public long? StartCastFireball { get;  set; }
+        public long? StartCastFireball { get; set; }
+        public long? StartCastFrostbolt { get; set; }
         public bool? AutoAttack { get; set; }
 
         [JsonIgnore]
@@ -43,8 +46,8 @@ namespace Mmo2d.EntityStateUpdates
             get
             {
                 return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
-                    HpDelta.HasValue || KillsDelta.HasValue || CastFireball.HasValue || AddFireball != null || RemoveFireball.HasValue || 
-                    SetTargetId.HasValue || DeselectTarget.HasValue || StartCastFireball.HasValue || AutoAttack.HasValue;
+                    HpDeltas.Any() || KillsDelta.HasValue || AddFireball != null || RemoveFireball.HasValue || 
+                    SetTargetId.HasValue || DeselectTarget.HasValue || StartCastFireball.HasValue || StartCastFrostbolt.HasValue || AutoAttack.HasValue;
             }
         }
     }
