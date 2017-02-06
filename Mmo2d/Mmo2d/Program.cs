@@ -44,9 +44,6 @@ namespace Example
                 {
                     // setup settings, load textures, sounds
                     game.VSync = VSyncMode.On;
-
-                    Entity.CharacterTextureId = TextureLoader.LoadTexture(Mmo2d.Properties.Resources.roguelikeChar_transparent);
-                    Ui.TextureId = TextureLoader.LoadTexture(Mmo2d.Properties.Resources.UIpackSheet_transparent);
                     
                     Ui = new Ui();
                     GL.Enable(EnableCap.Texture2D);

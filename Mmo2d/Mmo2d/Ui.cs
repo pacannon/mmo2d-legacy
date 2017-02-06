@@ -30,8 +30,6 @@ namespace Mmo2d
 
     public class Ui
     {
-        public static int TextureId { get; set; }
-
         public int TextureWidth { get; set; }
         public int TextureHeight { get; set; }
         public int FontTextureId { get; set; }

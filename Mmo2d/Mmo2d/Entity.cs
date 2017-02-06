@@ -15,8 +15,6 @@ namespace Mmo2d
 {
     public class Entity
     {
-        public static int CharacterTextureId { get; set; }
-
         public const float Speed = 0.04f;
         public const float width = 1.0f;
         public const float height = 1.0f;
@@ -62,8 +60,6 @@ namespace Mmo2d
 
         public void Render(bool selected)
         {
-            GL.BindTexture(TextureTarget.Texture2D, CharacterTextureId);
-
             RenderSprite(Row, Column, selected);
             
             if (TargetId != null)

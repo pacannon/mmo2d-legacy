@@ -37,11 +37,6 @@ namespace Mmo2d.Controller
             {
                 return ToggleableStates[key];
             }
-
-            //set
-            //{
-            //    Don't see a need for this for now.
-            //}
         }
 
 
