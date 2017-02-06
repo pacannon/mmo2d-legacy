@@ -44,6 +44,11 @@ namespace Mmo2d
 
         public long? CastTargetId { get; set; }
 
+        [JsonIgnore]
+        public bool? CastFireball { get; set; }
+        [JsonIgnore]
+        public bool? CastFrostbolt { get; set; }
+
         public int Kills { get; set; }
 
         [JsonIgnore]
@@ -160,20 +165,22 @@ namespace Mmo2d
                 updates[Id].Jumped = true;
             }
 
-            if (TimeSinceCastFireball == null && CastTargetId != null)
+            if (CastFireball.GetValueOrDefault())
             {
                 // Todo: Give Fireball age of timeSince - castTime
                 updates[Id].AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id);
 
                 CastTargetId = null;
+                CastFireball = null;
             }
 
-            if (TimeSinceCastFrostbolt == null && CastTargetId != null)
+            if (CastFrostbolt.GetValueOrDefault())
             {
                 // Todo: Give Fireball age of timeSince - castTime
                 updates[Id].AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id);
 
                 CastTargetId = null;
+                CastFrostbolt = null;
             }
 
             if ((TimeSinceAutoAttack == null || TimeSinceAutoAttack >= AutoAttackCooldown) && 
@@ -326,9 +333,10 @@ namespace Mmo2d
             {
                 TimeSinceCastFireball += delta;
 
-                if (TimeSinceCastFireball > Fireball.CastTime)
+                if (TimeSinceCastFireball >= Fireball.CastTime)
                 {
                     TimeSinceCastFireball = null;
+                    CastFireball = true;
                 }
             }
 
@@ -336,9 +344,10 @@ namespace Mmo2d
             {
                 TimeSinceCastFrostbolt += delta;
 
-                if (TimeSinceCastFrostbolt > Fireball.CastTime)
+                if (TimeSinceCastFrostbolt >= Fireball.CastTime)
                 {
                     TimeSinceCastFrostbolt = null;
+                    CastFrostbolt = true;
                 }
             }
 
