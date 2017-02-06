@@ -205,7 +205,11 @@ namespace Mmo2d
                     var elapsed = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
 
                     var update = GameState.GenerateUpdate(elapsed - lastElapsed);
-                    update.EntitiesToAdd.AddRange(entitiesCreated);
+
+                    foreach (var createdEntity in entitiesCreated)
+                    {
+                        update.AggregateEntityStateUpdate[createdEntity.Id].Add = createdEntity;
+                    }
                     GameState.ApplyUpdates(new[] { update }, elapsed - lastElapsed);
 
                     lastElapsed = elapsed;

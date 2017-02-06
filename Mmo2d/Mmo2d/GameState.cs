@@ -57,11 +57,9 @@ namespace Mmo2d
                 fireball.GenerateUpdates(delta, entitiesCopy, updates);
             }
 
-            gameStateDelta.EntitiesToRemove.AddRange(updates.Select(u => u.Value).Where(e => e.Died != null).Select(e => e.EntityId));
-
             if (GoblinSpawner != null)
             {
-                gameStateDelta.EntitiesToAdd.AddRange(GoblinSpawner.Update(delta, Entities));
+                GoblinSpawner.Update(delta, Entities, updates);
             }
             
             gameStateDelta.AggregateEntityStateUpdate = updates;
@@ -71,7 +69,7 @@ namespace Mmo2d
 
         public void ApplyUpdates(IEnumerable<GameStateDelta> updates, TimeSpan delta)
         {
-            Entities.AddRange(updates.SelectMany(u => u.EntitiesToAdd));
+            Entities.AddRange(updates.SelectMany(u => u.AggregateEntityStateUpdate).Where(u => u.Value.Add != null).Select(u => u.Value.Add));
 
             var entitiesCopy = Entities.ToList();
             var entityStateUpdates = updates.SelectMany(u => u.AggregateEntityStateUpdate);
@@ -96,7 +94,9 @@ namespace Mmo2d
                 Fireballs.RemoveAll(f => f.Id == removeId.Value.EntityId);
             }
 
-            var removed = Entities.RemoveAll(e => updates.SelectMany(u => u.EntitiesToRemove).Contains(e.Id));
+            var entitiesToRemove = updates.SelectMany(u => u.AggregateEntityStateUpdate).Where(u => u.Value.Remove != null).Select(u => u.Value.EntityId);
+
+            var removed = Entities.RemoveAll(e => entitiesToRemove.Contains(e.Id));
 
             Entities = Entities.OrderBy(e => e.Location.X).OrderByDescending(e => e.Location.Y).ToList();
 

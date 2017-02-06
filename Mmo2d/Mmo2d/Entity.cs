@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using System.Drawing;
 using Mmo2d.UserCommands;
 using Mmo2d.Controller;
 using Newtonsoft.Json;
@@ -189,6 +188,7 @@ namespace Mmo2d
                 if (targetEntity.Hp + updates[targetEntity.Id].HpDeltas.Sum() < 1)
                 {
                     updates[targetEntity.Id].Died = true;
+                    updates[targetEntity.Id].Remove = true;
                     updates[Id].KillsDelta = (updates[Id].KillsDelta.HasValue ? updates[Id].KillsDelta.Value : 0) + 1;
                 }
             }
@@ -238,6 +238,7 @@ namespace Mmo2d
             if (TimeSinceDeath != null)
             {
                 updates[Id].Died = true;
+                updates[Id].Remove = true;
             }
 
             var displacement = IncrementPosition(entities);

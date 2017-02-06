@@ -85,6 +85,7 @@ namespace Mmo2d.Entities
                     if (targetEntity.Hp + updates[targetEntity.Id].HpDeltas.Sum() < 1)
                     {
                         updates[targetEntity.Id].Died = true;
+                        updates[targetEntity.Id].Remove = true;
                         updates[LauncherId].KillsDelta = (updates[LauncherId].KillsDelta.HasValue ? updates[LauncherId].KillsDelta.Value : 0) + 1;
                     }
                 }

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Mmo2d.EntityStateUpdates;
+using Newtonsoft.Json;
 using OpenTK;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ namespace Mmo2d
             Random = random;
         }
 
-        public List<Entity> Update(TimeSpan delta, List<Entity> entities)
+        public void Update(TimeSpan delta, List<Entity> entities, AggregateEntityStateUpdate updates)
         { 
             TimeSinceLastGoblinAddition += delta;
 
@@ -59,10 +60,8 @@ namespace Mmo2d
                 
                 SpawnedGoblins.Add(newlySpawnedGoblin);
 
-                return new List <Entity> { newlySpawnedGoblin };
+                updates[newlySpawnedGoblin.Id].Add = newlySpawnedGoblin;
             }
-
-            return new List<Entity>();
         }
     }
 }
