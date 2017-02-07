@@ -10,8 +10,8 @@ namespace Mmo2d.Entities
 {
     public class ProjectileType
     {
-        public static ProjectileType Fireball = new ProjectileType(3, 15, Color.Red, TimeSpan.FromSeconds(3.0), false);
-        public static ProjectileType Frostbolt = new ProjectileType(2, 12, Color.Blue, TimeSpan.FromSeconds(2.5), true);
+        public static ProjectileType Fireball = new ProjectileType(4, 15, Color.Red, TimeSpan.FromSeconds(3.0), false);
+        public static ProjectileType Frostbolt = new ProjectileType(3, 12, Color.Blue, TimeSpan.FromSeconds(2.5), true);
 
         public int Damage { get; set; }
         public float Range { get; set; }

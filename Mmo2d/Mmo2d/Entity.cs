@@ -54,7 +54,7 @@ namespace Mmo2d
         [JsonIgnore]
         public float Speed { get { return speed * SpeedModifier; } }
         [JsonIgnore]
-        public float SpeedModifier { get { return TimeSinceChilled != null ? 5.0f / 7.0f : 1.0f; } }
+        public float SpeedModifier { get { return TimeSinceChilled != null ? 4.0f / 7.0f : 1.0f; } }
 
         public int Kills { get; set; }
 
