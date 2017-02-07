@@ -102,8 +102,6 @@ namespace Mmo2d.Textures
 
             GL.Begin(PrimitiveType.Quads);
 
-            GL.Color3(Color.Transparent);
-
             GL.TexCoord2(TopLeftCorner); GL.Vertex2(topLeftCorner);
 
             GL.TexCoord2(TopLeftCorner + Vector2.Multiply(TopRightCorner - TopLeftCorner, percentFromLeft)); GL.Vertex2(topLeftCorner + Vector2.Multiply(new Vector2(width, 0.0f), percentFromLeft));

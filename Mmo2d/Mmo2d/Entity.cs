@@ -9,12 +9,13 @@ using Newtonsoft.Json;
 using Mmo2d.Entities;
 using Mmo2d.Textures;
 using Mmo2d.EntityStateUpdates;
+using System.Drawing;
 
 namespace Mmo2d
 {
     public class Entity
     {
-        public const float Speed = 0.04f;
+        public const float speed = 0.04f;
         public const float width = 1.0f;
         public const float height = 1.0f;
         public const float HalfAcceration = -9.81f / 2.0f;
@@ -26,6 +27,7 @@ namespace Mmo2d
         public static readonly TimeSpan CastFireballCooldown = TimeSpan.FromMilliseconds(200.0);
         public static readonly TimeSpan AutoAttackCooldown = TimeSpan.FromMilliseconds(2000.0);
         public static readonly TimeSpan HpRegenTime = TimeSpan.FromMilliseconds(5000);
+        public static readonly TimeSpan ChilledDuration = TimeSpan.FromMilliseconds(5000);
         public static readonly float JumpVelocity = (float)-JumpAnimationDuration.TotalSeconds * HalfAcceration;
 
         public long Id { get; set; }
@@ -39,6 +41,7 @@ namespace Mmo2d
         public TimeSpan? TimeSinceCastFrostbolt { get; set; }        
         public TimeSpan? TimeSinceAutoAttack { get; set; }
         public TimeSpan TimeSinceLastHealthRegen { get; set; }
+        public TimeSpan? TimeSinceChilled { get; set; }
 
         public long? TargetId { get; set; }
 
@@ -48,6 +51,10 @@ namespace Mmo2d
         public bool? CastFireball { get; set; }
         [JsonIgnore]
         public bool? CastFrostbolt { get; set; }
+        [JsonIgnore]
+        public float Speed { get { return speed * SpeedModifier; } }
+        [JsonIgnore]
+        public float SpeedModifier { get { return TimeSinceChilled != null ? 5.0f / 7.0f : 1.0f; } }
 
         public int Kills { get; set; }
 
@@ -64,6 +71,11 @@ namespace Mmo2d
 
         public void Render(bool selected)
         {
+            if (TimeSinceChilled != null)
+            {
+                GL.Color3(Color.Aqua);
+            }
+
             RenderSprite(Row, Column, selected);
             
             if (TargetId != null)
@@ -76,6 +88,8 @@ namespace Mmo2d
                 RenderSprite(RandomFromId() % 4, 3, selected);
                 RenderSprite(RandomFromId() % 9, 7 % 9 + 6, selected);
             }
+
+            GL.Color3(Color.Transparent);
 
             if (TimeSinceCastFireball != null)
             {
@@ -361,6 +375,16 @@ namespace Mmo2d
                 }
             }
 
+            if (TimeSinceChilled != null)
+            {
+                TimeSinceChilled += delta;
+
+                if (TimeSinceChilled >= ChilledDuration)
+                {
+                    TimeSinceChilled = null;
+                }
+            }
+
             if (TimeSinceLastHealthRegen != null)
             {
                 TimeSinceLastHealthRegen += delta;
@@ -425,6 +449,11 @@ namespace Mmo2d
                 {
                     CastTargetId = update.StartCastFrostbolt.Value;
                     TimeSinceCastFrostbolt = TimeSpan.Zero;
+                }
+
+                if (update.ApplyChill != null)
+                {
+                    TimeSinceChilled = TimeSpan.Zero;
                 }
 
                 if (update.AutoAttack != null)
