@@ -79,12 +79,12 @@ namespace Mmo2d
 
             if (TimeSinceCastFireball != null)
             {
-                RenderCastBar(TimeSinceCastFireball.Value, Fireball.CastTime);
+                RenderCastBar(TimeSinceCastFireball.Value, ProjectileType.Fireball.CastTime);
             }
 
             if (TimeSinceCastFrostbolt != null)
             {
-                RenderCastBar(TimeSinceCastFrostbolt.Value, Fireball.CastTime);
+                RenderCastBar(TimeSinceCastFrostbolt.Value, ProjectileType.Frostbolt.CastTime);
             }
 
             if (selected)
@@ -168,7 +168,7 @@ namespace Mmo2d
             if (CastFireball.GetValueOrDefault())
             {
                 // Todo: Give Fireball age of timeSince - castTime
-                updates[Id].AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id);
+                updates[Id].AddFireball = new Projectile(ProjectileType.Fireball, Location, CastTargetId.Value, random.Next(), Id);
 
                 CastTargetId = null;
                 CastFireball = null;
@@ -177,7 +177,7 @@ namespace Mmo2d
             if (CastFrostbolt.GetValueOrDefault())
             {
                 // Todo: Give Fireball age of timeSince - castTime
-                updates[Id].AddFireball = new Fireball(Location, CastTargetId.Value, random.Next(), Id);
+                updates[Id].AddFireball = new Projectile(ProjectileType.Frostbolt, Location, CastTargetId.Value, random.Next(), Id);
 
                 CastTargetId = null;
                 CastFrostbolt = null;
@@ -187,7 +187,7 @@ namespace Mmo2d
                 targetEntity != null && IsFoe(targetEntity) && (targetEntity.Location - Location).Length <= MeleeRange)
             {
                 updates[Id].AutoAttack = true;
-                updates[Id].RemoveFireball = true;
+                updates[Id].RemoveProjectile = true;
 
                 updates[TargetId.Value].HpDeltas.Add(-2);
                 updates[TargetId.Value].SetTargetId = Id;
@@ -210,7 +210,7 @@ namespace Mmo2d
                     target = targets.First();
                 }
 
-                if (target != null && (target.Location - Location).Length <= Fireball.Range)
+                if (target != null && (target.Location - Location).Length <= ProjectileType.Fireball.Range)
                 {
                     updates[Id].StartCastFireball = target.Id;
                 }
@@ -226,7 +226,7 @@ namespace Mmo2d
                     target = targets.First();
                 }
 
-                if (target != null && (target.Location - Location).Length <= Fireball.Range)
+                if (target != null && (target.Location - Location).Length <= ProjectileType.Frostbolt.Range)
                 {
                     updates[Id].StartCastFrostbolt = target.Id;
                 }
@@ -333,7 +333,7 @@ namespace Mmo2d
             {
                 TimeSinceCastFireball += delta;
 
-                if (TimeSinceCastFireball >= Fireball.CastTime)
+                if (TimeSinceCastFireball >= ProjectileType.Fireball.CastTime)
                 {
                     TimeSinceCastFireball = null;
                     CastFireball = true;
@@ -344,7 +344,7 @@ namespace Mmo2d
             {
                 TimeSinceCastFrostbolt += delta;
 
-                if (TimeSinceCastFrostbolt >= Fireball.CastTime)
+                if (TimeSinceCastFrostbolt >= ProjectileType.Frostbolt.CastTime)
                 {
                     TimeSinceCastFrostbolt = null;
                     CastFrostbolt = true;
@@ -355,7 +355,7 @@ namespace Mmo2d
             {
                 TimeSinceAutoAttack += delta;
 
-                if (TimeSinceAutoAttack > Fireball.CastTime)
+                if (TimeSinceAutoAttack > AutoAttackCooldown + TimeSpan.FromSeconds(1.0))
                 {
                     TimeSinceAutoAttack = null;
                 }

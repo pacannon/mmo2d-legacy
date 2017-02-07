@@ -29,9 +29,9 @@ namespace Mmo2d.EntityStateUpdates
         public int? KillsDelta { get; set; }
 
         // Merge this into game state update
-        public Fireball AddFireball { get; set; }
+        public Projectile AddFireball { get; set; }
 
-        public bool? RemoveFireball { get; set; }
+        public bool? RemoveProjectile { get; set; }
 
         public long? SetTargetId { get; set; }
         public bool? DeselectTarget { get; set; }
@@ -48,7 +48,7 @@ namespace Mmo2d.EntityStateUpdates
             get
             {
                 return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
-                    HpDeltas.Any() || KillsDelta.HasValue || AddFireball != null || RemoveFireball.HasValue || 
+                    HpDeltas.Any() || KillsDelta.HasValue || AddFireball != null || RemoveProjectile.HasValue || 
                     SetTargetId.HasValue || DeselectTarget.HasValue || StartCastFireball.HasValue || StartCastFrostbolt.HasValue || AutoAttack.HasValue || Remove.HasValue || Add != null;
             }
         }

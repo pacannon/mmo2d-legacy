@@ -61,7 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dictionary.cs" />
-    <Compile Include="Entities\Fireball.cs" />
+    <Compile Include="Entities\Projectile.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="EntityStateUpdates\AggregateEntityStateUpdate.cs" />
     <Compile Include="EntityStateUpdates\EntityStateUpdate.cs" />

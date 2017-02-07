@@ -1,5 +1,4 @@
 ﻿using Mmo2d.EntityStateUpdates;
-using Newtonsoft.Json;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
@@ -9,34 +8,41 @@ using System.Linq;
 
 namespace Mmo2d.Entities
 {
-    public class Fireball
+    public class ProjectileType
     {
-        public const float width = 0.2f;
-        public const float height = 0.2f;
-        public const float radius = 0.05f;
-        public static readonly TimeSpan CastTime = TimeSpan.FromSeconds(0.667);
-        public const int damage = 2;
-        public const float Range = 10;
+        public static ProjectileType Fireball = new ProjectileType(3, 10, Color.Red, TimeSpan.FromSeconds(3.0));
+        public static ProjectileType Frostbolt = new ProjectileType(2, 7, Color.Blue, TimeSpan.FromSeconds(2.5));
 
-        [JsonIgnore]
-        public float LeftEdge { get { return Location.X - width / 2.0f; } }
-        [JsonIgnore]
-        public float RightEdge { get { return Location.X + width / 2.0f; } }
-        [JsonIgnore]
-        public float TopEdge { get { return Location.Y + height / 2.0f; } }
-        [JsonIgnore]
-        public float BottomEdge { get { return Location.Y - height / 2.0f; } }
-        [JsonIgnore]
-        public Vector2 TopLeftCorner { get { return new Vector2(LeftEdge, TopEdge); } }
-        [JsonIgnore]
-        public Vector2 BottomLeftCorner { get { return new Vector2(LeftEdge, BottomEdge); } }
-        [JsonIgnore]
-        public Vector2 BottomRightCorner { get { return new Vector2(RightEdge, BottomEdge); } }
-        [JsonIgnore]
-        public Vector2 TopRightCorner { get { return new Vector2(RightEdge, TopEdge); } }
+        public int Damage { get; set; }
+        public float Range { get; set; }
+        public Color Color { get; set; }
+        public TimeSpan CastTime { get; set; }
 
-        public Fireball(Vector2 location, long targetId, long id, long launcherId)
+        public ProjectileType(int damage, float range, Color color, TimeSpan castTime)
         {
+            Damage = damage;
+            Range = range;
+            Color = color;
+            CastTime = castTime;
+        }
+    }
+
+    public class Projectile
+    {
+        public const float radius = 0.05f;
+
+        public long Id { get; set; }
+        public Vector2 Location { get; set; }
+        public long TargetId { get; set; }
+        public long LauncherId { get; set; }
+        public TimeSpan Age { get; set; }
+
+        public ProjectileType ProjectileType { get; set; }
+
+        public Projectile(ProjectileType projectileType, Vector2 location, long targetId, long id, long launcherId)
+        {
+            ProjectileType = projectileType;
+
             TargetId = targetId;
             Location = location;
             Age = TimeSpan.Zero;
@@ -46,7 +52,7 @@ namespace Mmo2d.Entities
 
         public void Render()
         {
-            GL.Color3(Color.Red);
+            GL.Color3(ProjectileType.Color);
 
             int i;
             int triangleAmount = 1000;
@@ -78,9 +84,9 @@ namespace Mmo2d.Entities
 
                 if (targetEntity.Overlapping(nextLocation.Value))
                 {
-                    updates[targetEntity.Id].HpDeltas.Add(-damage);
+                    updates[targetEntity.Id].HpDeltas.Add(-ProjectileType.Damage);
                     updates[targetEntity.Id].SetTargetId = LauncherId;
-                    updates[Id].RemoveFireball = true;
+                    updates[Id].RemoveProjectile = true;
 
                     if (targetEntity.Hp + updates[targetEntity.Id].HpDeltas.Sum() < 1)
                     {
@@ -93,7 +99,7 @@ namespace Mmo2d.Entities
 
             else
             {
-                updates[Id].RemoveFireball = true;
+                updates[Id].RemoveProjectile = true;
             }
         }
 
@@ -108,12 +114,6 @@ namespace Mmo2d.Entities
 
             Age += delta;
         }
-
-        public long Id { get; set; }
-        public Vector2 Location { get; set; }
-        public long TargetId { get; set; }
-        public long LauncherId { get; set; }
-        public TimeSpan Age { get; set; }
 
         public Vector2? NextLocation(TimeSpan delta, IEnumerable<Entity> entities)
         {

@@ -12,7 +12,7 @@ namespace Mmo2d
     public class GameState
     {
         public List<Entity> Entities { get; set; }
-        public List<Fireball> Fireballs { get; set; }
+        public List<Projectile> Projectiles { get; set; }
 
         [JsonIgnore]
         public Random Random { get; set; }
@@ -23,7 +23,7 @@ namespace Mmo2d
         public GameState(Random random)
         {
             Entities = new List<Entity>();
-            Fireballs = new List<Fireball>();
+            Projectiles = new List<Projectile>();
             Random = random;
         }
 
@@ -34,7 +34,7 @@ namespace Mmo2d
                 entity.Render(entity.Id == playerController.TargetId);
             }
 
-            foreach (var fireball in Fireballs)
+            foreach (var fireball in Projectiles)
             {
                 fireball.Render();
             }
@@ -52,7 +52,7 @@ namespace Mmo2d
                 entity.GenerateUpdates(Entities, updates, Random);
             }
 
-            foreach (var fireball in Fireballs)
+            foreach (var fireball in Projectiles)
             {
                 fireball.GenerateUpdates(delta, entitiesCopy, updates);
             }
@@ -81,17 +81,17 @@ namespace Mmo2d
 
             foreach (var newFireball in entityStateUpdates.Where(u => u.Value.AddFireball != null).Select(u => u.Value.AddFireball))
             {
-                Fireballs.Add(newFireball);
+                Projectiles.Add(newFireball);
             }
 
-            foreach (var fireball in Fireballs)
+            foreach (var projectile in Projectiles)
             {
-                fireball.ApplyUpdate(delta, entitiesCopy);
+                projectile.ApplyUpdate(delta, entitiesCopy);
             }
 
-            foreach (var removeId in entityStateUpdates.Where(u => u.Value.RemoveFireball != null))
+            foreach (var removeId in entityStateUpdates.Where(u => u.Value.RemoveProjectile != null))
             {
-                Fireballs.RemoveAll(f => f.Id == removeId.Value.EntityId);
+                Projectiles.RemoveAll(f => f.Id == removeId.Value.EntityId);
             }
 
             var entitiesToRemove = updates.SelectMany(u => u.AggregateEntityStateUpdate).Where(u => u.Value.Remove != null).Select(u => u.Value.EntityId);
