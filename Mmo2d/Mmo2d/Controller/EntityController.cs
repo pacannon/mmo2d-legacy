@@ -119,7 +119,6 @@ namespace Mmo2d.Controller
 
                     on = value;
 
-                    ToggledOn = On || Toggled;
                     Toggled = true;
                 }
             }
