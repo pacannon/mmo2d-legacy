@@ -1,4 +1,5 @@
 ﻿using Mmo2d.UserCommands;
+using OpenTK;
 using System;
 using System.Collections.Generic;
 
@@ -9,6 +10,36 @@ namespace Mmo2d.Controller
         public Dictionary<States, ToggleableState> ToggleableStates { get; set; }
 
         public long? TargetId { get; set; }
+        
+        public Vector2 DirectionOfMotion
+        {
+            get
+            {
+                var velocity = Vector2.Zero;
+
+                if (this[States.MoveRight].On && !this[States.MoveLeft].Toggled)
+                {
+                    velocity += Vector2.UnitX;
+                }
+
+                if (this[States.MoveLeft].On && !this[States.MoveRight].Toggled)
+                {
+                    velocity -= Vector2.UnitX;
+                }
+
+                if (this[States.MoveUp].On && !this[States.MoveDown].Toggled)
+                {
+                    velocity += Vector2.UnitY;
+                }
+
+                if (this[States.MoveDown].On && !this[States.MoveUp].Toggled)
+                {
+                    velocity -= Vector2.UnitY;
+                }
+
+                return velocity;
+            }
+        }
 
         public enum States
         {

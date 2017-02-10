@@ -112,11 +112,12 @@ namespace Mmo2d
             const float third = (1.0f / 3.0f);
             var percentage = (float)(elapsed.TotalMilliseconds / total.TotalMilliseconds);
 
-
+                        //[20][23]
             SpriteSheet.Ui[25][6].Render(Location - new Vector2(Width, 0.0f) - Vector2.Multiply(Vector2.UnitY, height), Width, height);
             SpriteSheet.Ui[25][7].Render(Location - Vector2.Multiply(Vector2.UnitY, height), Width, height);
             SpriteSheet.Ui[25][8].Render(Location + new Vector2(Width, 0.0f) - Vector2.Multiply(Vector2.UnitY, height), Width, height);
 
+                        //[16][16]
             SpriteSheet.Ui[27][0].Render(Location - new Vector2(Width, 0.0f) - Vector2.Multiply(Vector2.UnitY, height), Width, height, percentage / third);
 
             if (percentage >= third)
@@ -293,36 +294,15 @@ namespace Mmo2d
 
             else
             {
-                var displacementVector = Vector2.Zero;
 
-                if (EntityController[EntityController.States.MoveUp].OnOrToggled)
+                var displacementVector = Vector2.Multiply(EntityController.DirectionOfMotion, Speed);
+
+                if (displacementVector == Vector2.Zero)
                 {
-                    displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(Vector2.UnitY, 0.644f));
+                    return null;
                 }
 
-                if (EntityController[EntityController.States.MoveDown].OnOrToggled)
-                {
-                    displacementVector = Vector2.Add(displacementVector, Vector2.Multiply(-Vector2.UnitY, 0.644f));
-                }
-
-                if (EntityController[EntityController.States.MoveLeft].OnOrToggled)
-                {
-                    displacementVector = Vector2.Add(displacementVector, -Vector2.UnitX);
-                }
-
-                if (EntityController[EntityController.States.MoveRight].OnOrToggled)
-                {
-                    displacementVector = Vector2.Add(displacementVector, Vector2.UnitX);
-                }
-
-                if (displacementVector != Vector2.Zero)
-                {
-                    displacementVector = Speed * displacementVector.Normalized();
-
-                    return displacementVector;
-                }
-
-                return null;
+                return Vector2.Multiply(displacementVector.Normalized(), Speed);
             }
         }
 
