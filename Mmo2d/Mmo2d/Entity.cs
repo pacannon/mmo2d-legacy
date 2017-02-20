@@ -168,7 +168,8 @@ namespace Mmo2d
 
         public void InputHandler(UserCommand userCommand)
         {
-            EntityController = EntityController.ApplyUserCommand(userCommand);
+            var stateToggle = EntityController.ApplyUserCommand(userCommand);
+            EntityController.ChangeState(stateToggle);
         }
 
         public void GenerateUpdates(IEnumerable<Entity> entities, AggregateEntityStateUpdate updates, Random random)
@@ -247,9 +248,9 @@ namespace Mmo2d
                 }
             }
 
-            if (EntityController.TargetId != TargetId)
+            if (EntityController[EntityController.States.TargetId].LongVal != TargetId)
             {
-                updates[Id].SetTargetId = EntityController.TargetId;
+                updates[Id].SetTargetId = EntityController[EntityController.States.TargetId].LongVal;
 
                 if (updates[Id].SetTargetId == null)
                 {
@@ -411,7 +412,7 @@ namespace Mmo2d
                 if (update.SetTargetId != null)
                 {
                     TargetId = update.SetTargetId;
-                    EntityController.TargetId = TargetId;
+                    EntityController[EntityController.States.TargetId].LongVal = TargetId;
                 }
 
                 if (update.DeselectTarget != null)

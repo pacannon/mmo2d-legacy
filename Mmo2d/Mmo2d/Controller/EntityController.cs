@@ -7,9 +7,7 @@ namespace Mmo2d.Controller
 {
     public class EntityController
     {
-        public Dictionary<States, ToggleableState> ToggleableStates { get; set; }
-
-        public long? TargetId { get; set; }
+        public Dictionary<States, State> ToggleableStates { get; set; }
         
         public Vector2 DirectionOfMotion
         {
@@ -17,27 +15,114 @@ namespace Mmo2d.Controller
             {
                 var velocity = Vector2.Zero;
 
-                if (this[States.MoveRight].On && !this[States.MoveLeft].Toggled)
+                if (this[States.MoveRight].BoolVal.GetValueOrDefault() && !this[States.MoveLeft].Changed.GetValueOrDefault())
                 {
                     velocity += Vector2.UnitX;
                 }
 
-                if (this[States.MoveLeft].On && !this[States.MoveRight].Toggled)
+                if (this[States.MoveLeft].BoolVal.GetValueOrDefault() && !this[States.MoveRight].Changed.GetValueOrDefault())
                 {
                     velocity -= Vector2.UnitX;
                 }
 
-                if (this[States.MoveUp].On && !this[States.MoveDown].Toggled)
+                if (this[States.MoveUp].BoolVal.GetValueOrDefault() && !this[States.MoveDown].Changed.GetValueOrDefault())
                 {
                     velocity += Vector2.UnitY;
                 }
 
-                if (this[States.MoveDown].On && !this[States.MoveUp].Toggled)
+                if (this[States.MoveDown].BoolVal.GetValueOrDefault() && !this[States.MoveUp].Changed.GetValueOrDefault())
                 {
                     velocity -= Vector2.UnitY;
                 }
 
                 return velocity;
+            }
+        }
+
+        public EntityController()
+        {
+            ToggleableStates = new Dictionary<States, State>();
+
+            foreach (States entityControllerToggleableState in Enum.GetValues(typeof(States)))
+            {
+                ToggleableStates.Add(entityControllerToggleableState, new State(entityControllerToggleableState));
+            }
+        }
+
+        public State this[States key]
+        {
+            get
+            {
+                return ToggleableStates[key];
+            }
+        }
+
+
+        public State ApplyUserCommand(UserCommand userCommand)
+        {
+            var keyEventArgs = userCommand.KeyEventArgs;
+
+            if (keyEventArgs != null)
+            {
+                switch (keyEventArgs.Key)
+                {
+                    case OpenTK.Input.Key.W:
+                        return new State(States.MoveUp) { BoolVal = keyEventArgs.KeyDown, };
+
+                    case OpenTK.Input.Key.S:
+                        return new State(States.MoveDown) { BoolVal = keyEventArgs.KeyDown, };
+
+                    case OpenTK.Input.Key.A:
+                        return new State(States.MoveLeft) { BoolVal = keyEventArgs.KeyDown, };
+
+                    case OpenTK.Input.Key.D:
+                        return new State(States.MoveRight) { BoolVal = keyEventArgs.KeyDown, };
+
+                    case OpenTK.Input.Key.Space:
+                        return new State(States.Jump) { BoolVal = keyEventArgs.KeyDown, };
+
+                    case OpenTK.Input.Key.E:
+                        return new State(States.CastFireball) { BoolVal = keyEventArgs.KeyDown, };
+
+                    case OpenTK.Input.Key.Q:
+                        return new State(States.CastFrostbolt) { BoolVal = keyEventArgs.KeyDown, };
+
+                    default:
+                        return null;
+                }
+            }
+
+            if (userCommand.DeselectTarget.HasValue)
+            {
+                return new State(States.TargetId) { LongVal = null, };
+            }
+
+            if (userCommand.SetTargetId.HasValue)
+            {
+                return new State(States.TargetId) { LongVal = userCommand.SetTargetId.Value, };
+            }
+
+            if (userCommand.CastFireball.HasValue)
+            {
+                return new State(States.CastFireball) { BoolVal = true, };
+            }
+
+            return null;
+        }
+
+
+        public void ChangeState(State toggeableState)
+        {
+            this[toggeableState.StateKind].BoolVal = toggeableState.BoolVal;
+            this[toggeableState.StateKind].LongVal = toggeableState.LongVal;
+            this[toggeableState.StateKind].Changed = toggeableState.Changed;
+        }
+
+        public virtual void Update()
+        {
+            foreach (var state in ToggleableStates.Values)
+            {
+                state.EraseMemory();
             }
         }
 
@@ -50,179 +135,80 @@ namespace Mmo2d.Controller
             Jump,
             CastFireball,
             CastFrostbolt,
+            TargetId,
         }
 
-        public EntityController()
+        public class State
         {
-            ToggleableStates = new Dictionary<States, ToggleableState>();
+            public States StateKind { get; set; }
 
-            foreach (States entityControllerToggleableStates in Enum.GetValues(typeof(States)))
+            public bool? boolVal;
+            public long? longVal;
+
+            public bool? BoolVal
             {
-                ToggleableStates.Add(entityControllerToggleableStates, new ToggleableState());
-            }
-        }
-
-        public ToggleableState this[States key]
-        {
-            get
-            {
-                return ToggleableStates[key];
-            }
-        }
-
-
-        public EntityController ApplyUserCommand(UserCommand userCommand)
-        {
-            var clone = (EntityController)this.MemberwiseClone();
-
-            var keyEventArgs = userCommand.KeyEventArgs;
-
-            if (keyEventArgs != null)
-            {
-                switch (keyEventArgs.Key)
-                {
-                    case OpenTK.Input.Key.W:
-                        clone[States.MoveUp].On = keyEventArgs.KeyDown;
-                        break;
-
-                    case OpenTK.Input.Key.S:
-                        clone[States.MoveDown].On = keyEventArgs.KeyDown;
-                        break;
-
-                    case OpenTK.Input.Key.A:
-                        clone[States.MoveLeft].On = keyEventArgs.KeyDown;
-                        break;
-
-                    case OpenTK.Input.Key.D:
-                        clone[States.MoveRight].On = keyEventArgs.KeyDown;
-                        break;
-
-                    case OpenTK.Input.Key.Space:
-                        clone[States.Jump].On = keyEventArgs.KeyDown;
-                        break;
-
-                    case OpenTK.Input.Key.E:
-                        clone[States.CastFireball].On = keyEventArgs.KeyDown;
-                        break;
-
-                    case OpenTK.Input.Key.Q:
-                        clone[States.CastFrostbolt].On = keyEventArgs.KeyDown;
-                        break;
-                }
-            }
-
-            if (userCommand.DeselectTarget.HasValue)
-            {
-                clone.TargetId = null;
-            }
-
-            if (userCommand.SetTargetId.HasValue)
-            {
-                clone.TargetId = userCommand.SetTargetId.Value;
-            }
-
-            return clone;
-        }
-
-        public virtual void Update()
-        {
-            foreach (var state in ToggleableStates.Values)
-            {
-                state.EraseMemory();
-            }
-        }
-
-        public class ToggleableState
-        {
-            private bool on;
-            private bool toggled;
-
-            public bool On
-            {
-                get { return on; }
-
+                get { return boolVal; }
                 set
                 {
-                    if (on == value)
+                    if (boolVal == value)
                     {
                         return;
                     }
 
-                    on = value;
-
-                    Toggled = true;
+                    boolVal = value;
+                    
+                    Changed = true;
+                    ToggledOn = boolVal == true;
                 }
             }
 
-            public bool Toggled
+            public long? LongVal
             {
-                get { return toggled; }
+                get { return longVal; }
 
                 set
                 {
-                    if (toggled == value)
+                    if (longVal == value)
                     {
                         return;
                     }
 
-                    toggled = value;
+                    longVal = value;
 
-                    ToggledOn |= On;
+                    Changed = true;
+                }
+            }
+
+            private bool? changed;
+
+            public State(States entityControllerToggleableState)
+            {
+                this.StateKind = entityControllerToggleableState;
+            }
+
+            public bool? Changed
+            {
+                get { return changed; }
+
+                set
+                {
+                    if (changed == value)
+                    {
+                        return;
+                    }
+
+                    changed = value;
+
+                    ToggledOn |= BoolVal.GetValueOrDefault();
                 }
             }
 
             public bool ToggledOn { get; set; }
 
-            public bool OnOrToggled
-            {
-                get { return On || Toggled; }
-            }
-
-            public void Toggle()
-            {
-                On = !On;
-            }
-
             public void EraseMemory()
             {
-                Toggled = false;
+                Changed = null;
                 ToggledOn = false;
-            }
-        }
-    }
-
-    public class GoblinEntityController : EntityController
-    {
-        public Random Random { get; set; }
-
-        public GoblinEntityController(Random random)
-        {
-            Random = random;
-        }
-
-        public override void Update()
-        {
-            var randomNumber = Random.Next() % 1;
-
-            if (randomNumber == 0)
-            {
-                randomNumber = Random.Next() % 4;
-
-                switch (randomNumber)
-                {
-                    case 0:
-                        this[States.MoveUp].Toggle();
-                        break;
-                    case 1:
-                        this[States.MoveDown].Toggle();
-                        break;
-                    case 2:
-                        this[States.MoveLeft].Toggle();
-                        break;
-                    case 3:
-                        this[States.MoveRight].Toggle();
-                        break;
-                }
             }
         }
     }

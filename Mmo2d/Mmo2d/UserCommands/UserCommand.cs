@@ -8,6 +8,7 @@ namespace Mmo2d.UserCommands
         public long? PlayerId { get; set; }
 
         public KeyEventArgs KeyEventArgs { get; set; }
+        public bool? CastFireball { get; set; }
 
         public long? SetTargetId { get; set; }
         public bool? DeselectTarget { get; set; }

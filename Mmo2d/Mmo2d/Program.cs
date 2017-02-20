@@ -106,9 +106,13 @@ namespace Example
 
                     var userCommand = new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, }, };
 
-                    playerController = playerController.ApplyUserCommand(userCommand);
+                    var stateChange = playerController.ApplyUserCommand(userCommand);
 
-                    Server.QueueUserCommand(userCommand);
+                    if (stateChange != null)
+                    {
+                        playerController.ChangeState(stateChange);
+                        Server.QueueUserCommand(userCommand);
+                    }
                 };
 
                 game.KeyUp += (sender, e) =>
@@ -118,30 +122,43 @@ namespace Example
                         return;
                     }
 
-                    var userCommand = new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true, }, };
+                    var userCommand = new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = true }, };
 
-                    playerController = playerController.ApplyUserCommand(userCommand);
+                    var stateChange = playerController.ApplyUserCommand(userCommand);
 
-                    Server.QueueUserCommand(userCommand);
+                    if (stateChange != null)
+                    {
+                        playerController.ChangeState(stateChange);
+                        Server.QueueUserCommand(userCommand);
+                    }
                 };
 
                 game.MouseDown += (sender, e) =>
                 {
-                    var bottomLeftOfScreen = CameraBottomLeft();
-                    var clicked = new Vector2 { X = ((float)e.Position.X / (float)game.Width) * CameraWidth, Y = CameraHeight - ((float)e.Position.Y / (float)game.Height) * CameraHeight };
+                    var userCommand = Ui.HandleClick(new MouseEventArgs(e.X, game.Height - e.Y));
 
-                    var setTargetTo = GameState.TargetId(clicked + bottomLeftOfScreen);
-                    
-                    var userCommand = new UserCommand() { SetTargetId = setTargetTo, };
-
-                    if (setTargetTo == null && playerController.TargetId.HasValue)
+                    if (userCommand == null)
                     {
-                        userCommand.DeselectTarget = true;
+                        var bottomLeftOfScreen = CameraBottomLeft();
+                        var clicked = new Vector2 { X = ((float)e.Position.X / (float)game.Width) * CameraWidth, Y = CameraHeight - ((float)e.Position.Y / (float)game.Height) * CameraHeight };
+
+                        var setTargetTo = GameState.TargetId(clicked + bottomLeftOfScreen);
+
+                        userCommand = new UserCommand() { SetTargetId = setTargetTo, };
+
+                        if (setTargetTo == null && playerController[EntityController.States.TargetId].LongVal.HasValue)
+                        {
+                            userCommand.DeselectTarget = true;
+                        }
                     }
 
-                    playerController = playerController.ApplyUserCommand(userCommand);
+                    var stateChange = playerController.ApplyUserCommand(userCommand);
 
-                    Server.QueueUserCommand(userCommand);
+                    if (stateChange != null)
+                    {
+                        playerController.ChangeState(stateChange);
+                        Server.QueueUserCommand(userCommand);
+                    }
                 };
 
                 game.MouseUp += (sender, e) =>

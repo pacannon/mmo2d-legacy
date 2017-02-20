@@ -31,7 +31,7 @@ namespace Mmo2d
         {
             foreach (var entity in Entities)
             {
-                entity.Render(entity.Id == playerController.TargetId);
+                entity.Render(entity.Id == playerController[EntityController.States.TargetId].LongVal);
             }
 
             foreach (var fireball in Projectiles)
@@ -102,7 +102,7 @@ namespace Mmo2d
 
             foreach (var entity in Entities.Where(e => e.TargetId.HasValue && !(Entities.Select(t => t.Id).Contains(e.TargetId.Value))))
             {
-                entity.EntityController.TargetId = null;
+                entity.EntityController[EntityController.States.TargetId].LongVal = null;
             }
         }
 

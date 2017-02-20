@@ -7,6 +7,7 @@ using System.IO;
 using Mmo2d.Textures;
 using OpenTK;
 using OpenTK.Input;
+using Mmo2d.UserCommands;
 
 namespace Mmo2d
 {
@@ -33,6 +34,8 @@ namespace Mmo2d
         public int TextureWidth { get; set; }
         public int TextureHeight { get; set; }
         public int FontTextureId { get; set; }
+        public const float ButtonSize = 50.0f;
+        public readonly Vector2 ButtonLocation = new Vector2(26, 26);
 
         public Ui()
         {
@@ -50,8 +53,10 @@ namespace Mmo2d
 
             //var mouseState = game.Mouse;
 
-            //var size = 50.0f;
-            //SpriteSheet.Ui[25][9].Render(new Vector2(mouseState.X + size/2, game.Height - mouseState.Y - size/2), size, size);
+            //SpriteSheet.Ui[25][9].Render(new Vector2(20 + size/2, game.Height - 20 - size/2), ButtonSize, ButtonSize);
+
+
+            SpriteSheet.Ui[24][14].Render(ButtonLocation, ButtonSize, ButtonSize);
         }
 
         public void DrawText(int x, int y, string text, int gameWidth, int gameHeight)
@@ -60,7 +65,7 @@ namespace Mmo2d
 
             GL.Enable(EnableCap.Blend);
             GL.LoadIdentity();
-            GL.Ortho(0, gameWidth, gameHeight, 0, 0, 1);
+            GL.Ortho(0, gameWidth, 0, gameHeight, 0, 1);
 
             GL.Color3(Color.Transparent);
 
@@ -140,6 +145,17 @@ namespace Mmo2d
 
                 TextureWidth = bitmap.Width; TextureHeight = bitmap.Height;
             }
+        }
+
+        public  UserCommand HandleClick(MouseEventArgs e)
+        {
+            if (e.X <= ButtonLocation.X + ButtonSize / 2 && e.X >= ButtonLocation.X - ButtonSize / 2 &&
+                e.Y <= ButtonLocation.Y + ButtonSize / 2 && e.Y >= ButtonLocation.Y - ButtonSize / 2)
+            {
+                return new UserCommand() { CastFireball = true, };
+            }
+
+            return null;
         }
     }
 }
