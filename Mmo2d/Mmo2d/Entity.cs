@@ -470,6 +470,7 @@ namespace Mmo2d
 
         public bool IsFoe(Entity potentialFoe)
         {
+            return true;
             return IsGoblin.GetValueOrDefault() != potentialFoe.IsGoblin.GetValueOrDefault();
         }
 
