@@ -73,6 +73,16 @@ namespace Mmo2d.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap frost_nova {
+            get {
+                object obj = ResourceManager.GetObject("frost_nova", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap frostbolt {
             get {
                 object obj = ResourceManager.GetObject("frostbolt", resourceCulture);

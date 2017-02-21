@@ -29,7 +29,7 @@ namespace Example
         [STAThread]
         public static void Main()
         {
-            CameraHeight = CameraWidth = 9.0f;
+            CameraHeight = CameraWidth = 18.0f;
 
             GameState = new GameState(null);
             DisplayLogin();

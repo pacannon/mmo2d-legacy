@@ -61,14 +61,15 @@ namespace Mmo2d
 
             SpriteSheet.Ui[13][3].Render(ButtonLocation, ButtonSize * 2.0f, ButtonSize * 2.0f);
             SpriteSheet.Ui[13][4].Render(ButtonLocation + new Vector2(ButtonSize * 1, 0), ButtonSize * 2.0f, ButtonSize * 2.0f);
-            SpriteSheet.Ui[13][4].Render(ButtonLocation + new Vector2(ButtonSize * 2, 0), ButtonSize * 2.0f, ButtonSize * 2.0f);
-            SpriteSheet.Ui[13][5].Render(ButtonLocation + new Vector2(ButtonSize * 3, 0), ButtonSize * 2.0f, ButtonSize * 2.0f);
+            SpriteSheet.Ui[13][5].Render(ButtonLocation + new Vector2(ButtonSize * 2, 0), ButtonSize * 2.0f, ButtonSize * 2.0f);
             SpriteSheet.Fireball[0][0].Render(ButtonLocation, ButtonSize, ButtonSize);
-            SpriteSheet.Frostbolt[0][0].Render(ButtonLocation + new Vector2(ButtonSize * 2, 0), ButtonSize, ButtonSize);
-            
+            SpriteSheet.Frostbolt[0][0].Render(ButtonLocation + new Vector2(ButtonSize * 1 + 5, 0), ButtonSize, ButtonSize);
+            SpriteSheet.FrostNova[0][0].Render(ButtonLocation + new Vector2(ButtonSize * 2 + 10, 0), ButtonSize, ButtonSize);
+
             GL.Color3(Color.Transparent);
-            DrawText(50, 26, "1", false);
-            DrawText(50 + (int)(ButtonSize * 2.0f), 26, "2", false);
+            DrawText(58, 26, "1", false);
+            DrawText(58 + (int)(ButtonSize * 1 + 5), 26, "2", false);
+            DrawText(58 + (int)(ButtonSize * 2 + 10), 26, "3", false);
         }
 
         public void DrawText(int x, int y, string text, bool black)

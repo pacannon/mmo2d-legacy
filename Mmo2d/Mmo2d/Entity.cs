@@ -15,9 +15,9 @@ namespace Mmo2d
 {
     public class Entity
     {
-        public const float speed = 0.04f;
-        public const float width = 1.0f;
-        public const float height = 1.0f;
+        public const float speed = 0.09f;
+        public const float width = 2.0f;
+        public const float height = 2.0f;
         public const float HalfAcceration = -9.81f / 2.0f;
         public const float MeleeRange = 1.5f;
         public const int HpRegen = 2;
@@ -42,6 +42,7 @@ namespace Mmo2d
         public TimeSpan? TimeSinceAutoAttack { get; set; }
         public TimeSpan TimeSinceLastHealthRegen { get; set; }
         public TimeSpan? TimeSinceChilled { get; set; }
+        public TimeSpan? TimeSinceFrozen { get; set; }
 
         public long? TargetId { get; set; }
 
@@ -54,7 +55,18 @@ namespace Mmo2d
         [JsonIgnore]
         public float Speed { get { return speed * SpeedModifier; } }
         [JsonIgnore]
-        public float SpeedModifier { get { return TimeSinceChilled != null ? 4.0f / 7.0f : 1.0f; } }
+        public float SpeedModifier
+        {
+            get
+            {
+                if (TimeSinceFrozen != null)
+                {
+                    return 0.0f;
+                }
+
+                return (TimeSinceChilled != null ? 4.0f / 7.0f : 1.0f) * (IsGoblin.GetValueOrDefault() ? 1.3f : 1.0f);
+            }
+        }
 
         public int Kills { get; set; }
 
@@ -74,6 +86,11 @@ namespace Mmo2d
             if (TimeSinceChilled != null)
             {
                 GL.Color3(Color.Aqua);
+            }
+
+            if (TimeSinceFrozen != null)
+            {
+                GL.Color3(Color.Blue);
             }
 
             RenderSprite(Row, Column, selected);
@@ -248,6 +265,23 @@ namespace Mmo2d
                 }
             }
 
+            if (EntityController[EntityController.States.CastFrostNova].ToggledOn)
+            {
+                foreach (var target in entities.Where(target => (target.Location - Location).Length <= 12.0f && IsFoe(target)))
+                {
+                    updates[target.Id].ApplyFreeze = true;
+                    updates[target.Id].HpDeltas.Add(-1);
+                    updates[target.Id].SetTargetId = Id;
+
+                    if (target.Hp + updates[target.Id].HpDeltas.Sum() < 1)
+                    {
+                        updates[target.Id].Died = true;
+                        updates[target.Id].Remove = true;
+                        updates[Id].KillsDelta = (updates[Id].KillsDelta.HasValue ? updates[Id].KillsDelta.Value : 0) + 1;
+                    }
+                }
+            }
+
             if (EntityController[EntityController.States.TargetId].LongVal != TargetId)
             {
                 updates[Id].SetTargetId = EntityController[EntityController.States.TargetId].LongVal;
@@ -366,6 +400,16 @@ namespace Mmo2d
                 }
             }
 
+            if (TimeSinceFrozen != null)
+            {
+                TimeSinceFrozen += delta;
+
+                if (TimeSinceFrozen >= TimeSpan.FromSeconds(8.0))
+                {
+                    TimeSinceFrozen = null;
+                }
+            }
+
             if (TimeSinceLastHealthRegen != null)
             {
                 TimeSinceLastHealthRegen += delta;
@@ -437,6 +481,11 @@ namespace Mmo2d
                     TimeSinceChilled = TimeSpan.Zero;
                 }
 
+                if (update.ApplyFreeze != null)
+                {
+                    TimeSinceFrozen = TimeSpan.Zero;
+                }
+
                 if (update.AutoAttack != null)
                 {
                     TimeSinceAutoAttack = TimeSpan.Zero;
@@ -470,7 +519,6 @@ namespace Mmo2d
 
         public bool IsFoe(Entity potentialFoe)
         {
-            return true;
             return IsGoblin.GetValueOrDefault() != potentialFoe.IsGoblin.GetValueOrDefault();
         }
 

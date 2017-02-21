@@ -87,6 +87,9 @@ namespace Mmo2d.Controller
                     case OpenTK.Input.Key.Number2:
                         return new State(States.CastFrostbolt) { BoolVal = keyEventArgs.KeyDown, };
 
+                    case OpenTK.Input.Key.Number3:
+                        return new State(States.CastFrostNova) { BoolVal = keyEventArgs.KeyDown, };
+
                     default:
                         return null;
                 }
@@ -135,6 +138,7 @@ namespace Mmo2d.Controller
             Jump,
             CastFireball,
             CastFrostbolt,
+            CastFrostNova,
             TargetId,
         }
 

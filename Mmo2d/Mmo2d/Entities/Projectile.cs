@@ -10,8 +10,8 @@ namespace Mmo2d.Entities
 {
     public class ProjectileType
     {
-        public static ProjectileType Fireball = new ProjectileType(4, 15, Color.Red, TimeSpan.FromSeconds(3.0), false);
-        public static ProjectileType Frostbolt = new ProjectileType(3, 12, Color.Blue, TimeSpan.FromSeconds(2.5), true);
+        public static ProjectileType Fireball = new ProjectileType(4, 30, Color.Red, TimeSpan.FromSeconds(3.0), false);
+        public static ProjectileType Frostbolt = new ProjectileType(3, 25, Color.Blue, TimeSpan.FromSeconds(2.5), true);
 
         public int Damage { get; set; }
         public float Range { get; set; }
@@ -31,7 +31,7 @@ namespace Mmo2d.Entities
 
     public class Projectile
     {
-        public const float radius = 0.05f;
+        public const float radius = 0.1f;
 
         public long Id { get; set; }
         public Vector2 Location { get; set; }
