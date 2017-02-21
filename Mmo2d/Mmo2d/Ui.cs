@@ -26,7 +26,7 @@ namespace Mmo2d
         public static bool BitmapFont = false;
         public static string FromFile;// = @"D:\Users\Phillip\Documents\Kenney Game Assets (version 40)\Fonts\KenPixel Mini Square.ttf";
     
-        public static string FontName = "Consolas";
+        public static string FontName = "Times New Roman";
     }
 
     public class Ui
@@ -34,8 +34,8 @@ namespace Mmo2d
         public int TextureWidth { get; set; }
         public int TextureHeight { get; set; }
         public int FontTextureId { get; set; }
-        public const float ButtonSize = 50.0f;
-        public readonly Vector2 ButtonLocation = new Vector2(26, 26);
+        public const float ButtonSize = 37.0f;
+        public readonly Vector2 ButtonLocation = new Vector2(50, 26);
 
         public Ui()
         {
@@ -49,25 +49,48 @@ namespace Mmo2d
                 return;
             }
 
-            DrawText(10, 10, playerEntity.Kills.ToString(), game.Width, game.Height);
+            GL.LoadIdentity();
+            GL.Ortho(0, game.Width, 0, game.Height, 0, 1);
+
+            DrawText(20, game.Height - 40, playerEntity.Kills.ToString(), false);
 
             //var mouseState = game.Mouse;
 
             //SpriteSheet.Ui[25][9].Render(new Vector2(20 + size/2, game.Height - 20 - size/2), ButtonSize, ButtonSize);
 
 
-            SpriteSheet.Ui[24][14].Render(ButtonLocation, ButtonSize, ButtonSize);
+            SpriteSheet.Ui[13][3].Render(ButtonLocation, ButtonSize * 2.0f, ButtonSize * 2.0f);
+            SpriteSheet.Ui[13][4].Render(ButtonLocation + new Vector2(ButtonSize * 1, 0), ButtonSize * 2.0f, ButtonSize * 2.0f);
+            SpriteSheet.Ui[13][4].Render(ButtonLocation + new Vector2(ButtonSize * 2, 0), ButtonSize * 2.0f, ButtonSize * 2.0f);
+            SpriteSheet.Ui[13][5].Render(ButtonLocation + new Vector2(ButtonSize * 3, 0), ButtonSize * 2.0f, ButtonSize * 2.0f);
+            SpriteSheet.Fireball[0][0].Render(ButtonLocation, ButtonSize, ButtonSize);
+            SpriteSheet.Frostbolt[0][0].Render(ButtonLocation + new Vector2(ButtonSize * 2, 0), ButtonSize, ButtonSize);
+            
+            GL.Color3(Color.Transparent);
+            DrawText(50, 26, "1", false);
+            DrawText(50 + (int)(ButtonSize * 2.0f), 26, "2", false);
         }
 
-        public void DrawText(int x, int y, string text, int gameWidth, int gameHeight)
+        public void DrawText(int x, int y, string text, bool black)
         {
+            if (black)
+            {
+                GL.Color3(Color.Black);
+            }
+
+            else
+            {
+                DrawText(x - 1, y - 1, text, true);
+                DrawText(x - 1, y + 1, text, true);
+                DrawText(x + 1, y + 1, text, true);
+                DrawText(x + 1, y - 1, text, true);
+
+                GL.Color3(Color.Transparent);
+            }
+
             GL.BindTexture(TextureTarget.Texture2D, FontTextureId);
 
             GL.Enable(EnableCap.Blend);
-            GL.LoadIdentity();
-            GL.Ortho(0, gameWidth, 0, gameHeight, 0, 1);
-
-            GL.Color3(Color.Transparent);
 
             GL.Begin(PrimitiveType.Quads);
 
@@ -80,13 +103,13 @@ namespace Mmo2d
                 float u = (float)(idx % Settings.GlyphsPerLine) * u_step;
                 float v = (float)(idx / Settings.GlyphsPerLine) * v_step;
 
-                GL.TexCoord2(u, v);
-                GL.Vertex2(x, y);
-                GL.TexCoord2(u + u_step, v);
-                GL.Vertex2(x + Settings.GlyphWidth, y);
-                GL.TexCoord2(u + u_step, v + v_step);
-                GL.Vertex2(x + Settings.GlyphWidth, y + Settings.GlyphHeight);
                 GL.TexCoord2(u, v + v_step);
+                GL.Vertex2(x, y);
+                GL.TexCoord2(u + u_step, v + v_step);
+                GL.Vertex2(x + Settings.GlyphWidth, y);
+                GL.TexCoord2(u + u_step, v);
+                GL.Vertex2(x + Settings.GlyphWidth, y + Settings.GlyphHeight);
+                GL.TexCoord2(u, v);
                 GL.Vertex2(x, y + Settings.GlyphHeight);
 
                 x += Settings.CharXSpacing;

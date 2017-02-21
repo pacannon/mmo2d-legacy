@@ -7,13 +7,17 @@ namespace Mmo2d.Textures
 {
     public class SpriteSheet
     {
-        public static SpriteSheet Ui { get; private set; }        
+        public static SpriteSheet Ui { get; private set; }
         public static SpriteSheet Characters { get; private set; }
+        public static SpriteSheet Fireball { get; private set; }
+        public static SpriteSheet Frostbolt { get; private set; }
 
         static SpriteSheet()
         {
             Characters = new SpriteSheet(Mmo2d.Properties.Resources.roguelikeChar_transparent, 16, 1);
             Ui = new SpriteSheet(Mmo2d.Properties.Resources.UIpackSheet_transparent, 16, 2);
+            Fireball = new SpriteSheet(Mmo2d.Properties.Resources.fireball, 16, 0);
+            Frostbolt = new SpriteSheet(Mmo2d.Properties.Resources.frostbolt, 16, 0);
         }
 
         public int TextureId { get; private set; }

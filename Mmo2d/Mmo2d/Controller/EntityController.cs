@@ -81,10 +81,10 @@ namespace Mmo2d.Controller
                     case OpenTK.Input.Key.Space:
                         return new State(States.Jump) { BoolVal = keyEventArgs.KeyDown, };
 
-                    case OpenTK.Input.Key.E:
+                    case OpenTK.Input.Key.Number1:
                         return new State(States.CastFireball) { BoolVal = keyEventArgs.KeyDown, };
 
-                    case OpenTK.Input.Key.Q:
+                    case OpenTK.Input.Key.Number2:
                         return new State(States.CastFrostbolt) { BoolVal = keyEventArgs.KeyDown, };
 
                     default:
