@@ -31,7 +31,7 @@ namespace Mmo2d.Entities
 
     public class Projectile
     {
-        public const float radius = 0.1f;
+        public const float radius = 0.15f;
 
         public long Id { get; set; }
         public Vector2 Location { get; set; }

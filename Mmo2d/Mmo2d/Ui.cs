@@ -54,9 +54,6 @@ namespace Mmo2d
 
             DrawText(20, game.Height - 40, playerEntity.Kills.ToString(), false);
 
-            //var mouseState = game.Mouse;
-
-            //SpriteSheet.Ui[25][9].Render(new Vector2(20 + size/2, game.Height - 20 - size/2), ButtonSize, ButtonSize);
 
 
             SpriteSheet.Ui[13][3].Render(ButtonLocation, ButtonSize * 2.0f, ButtonSize * 2.0f);
@@ -77,6 +74,10 @@ namespace Mmo2d
             DrawText(58 + (int)(ButtonSize * 2 + 10), 26, "3", false);
             DrawText(58 + (int)(ButtonSize * 3 + 15), 26, "4", false);
             DrawText(58 + (int)(ButtonSize * 4 + 20), 26, "5", false);
+
+            var mouseState = game.Mouse;
+
+            SpriteSheet.Ui[25][9].Render(new Vector2(mouseState.X + ButtonSize / 2, (game.Height - mouseState.Y) - ButtonSize / 2), ButtonSize, ButtonSize);
         }
 
         public void DrawText(int x, int y, string text, bool black)

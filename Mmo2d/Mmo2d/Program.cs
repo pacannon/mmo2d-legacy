@@ -39,8 +39,8 @@ namespace Example
 
             using (var game = new GameWindow(1200, 800))
             {
-                //game.CursorVisible = false;
-
+                game.CursorVisible = false;
+                
                 game.Load += (sender, e) =>
                 {
                     // setup settings, load textures, sounds
