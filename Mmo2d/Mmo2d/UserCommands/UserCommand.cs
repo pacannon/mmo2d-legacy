@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using OpenTK;
 
 namespace Mmo2d.UserCommands
 {
@@ -9,6 +10,7 @@ namespace Mmo2d.UserCommands
 
         public KeyEventArgs KeyEventArgs { get; set; }
         public bool? CastFireball { get; set; }
+        public Vector2? CastBlink { get; set; }
 
         public long? SetTargetId { get; set; }
         public bool? DeselectTarget { get; set; }

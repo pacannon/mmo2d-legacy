@@ -29,14 +29,15 @@ namespace Example
         [STAThread]
         public static void Main()
         {
-            CameraHeight = CameraWidth = 18.0f;
+            CameraHeight = 18.0f;
+            CameraWidth = 27.0f;
 
             GameState = new GameState(null);
             DisplayLogin();
 
             var playerController = new EntityController();
 
-            using (var game = new GameWindow(750, 750))
+            using (var game = new GameWindow(1200, 800))
             {
                 //game.CursorVisible = false;
 
@@ -99,19 +100,44 @@ namespace Example
 
                 game.KeyDown += (sender, e) =>
                 {
+
+                    UserCommand userCommand = null;
+
                     if (e.IsRepeat)
                     {
                         return;
                     }
 
-                    var userCommand = new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, }, };
-
-                    var stateChange = playerController.ApplyUserCommand(userCommand);
-
-                    if (stateChange != null)
+                    if (e.Key == Key.Number4)
                     {
-                        playerController.ChangeState(stateChange);
-                        Server.QueueUserCommand(userCommand);
+                        var bottomLeftOfScreen = CameraBottomLeft();
+                        var clicked = new Vector2 { X = ((float)game.Mouse.X / (float)game.Width) * CameraWidth, Y = CameraHeight - ((float)game.Mouse.Y / (float)game.Height) * CameraHeight };
+
+
+                        var playerEntity = GameState.Entities.FirstOrDefault(en => en.Id == IssuedId);
+
+                        if (playerEntity != null)
+                        {
+
+                            userCommand = new UserCommand() { CastBlink = ((clicked + bottomLeftOfScreen) - playerEntity.Location).Normalized(), };
+                            
+                        }
+                    }
+
+                    else
+                    {
+                        userCommand = new UserCommand() { KeyEventArgs = new KeyEventArgs { Key = e.Key, KeyUp = false, }, };
+                    }
+
+                    if (userCommand != null)
+                    {
+                        var stateChange = playerController.ApplyUserCommand(userCommand);
+
+                        if (stateChange != null)
+                        {
+                            playerController.ChangeState(stateChange);
+                            Server.QueueUserCommand(userCommand);
+                        }
                     }
                 };
 
@@ -150,14 +176,14 @@ namespace Example
                         {
                             userCommand.DeselectTarget = true;
                         }
-                    }
 
-                    var stateChange = playerController.ApplyUserCommand(userCommand);
+                        var stateChange = playerController.ApplyUserCommand(userCommand);
 
-                    if (stateChange != null)
-                    {
-                        playerController.ChangeState(stateChange);
-                        Server.QueueUserCommand(userCommand);
+                        if (stateChange != null)
+                        {
+                            playerController.ChangeState(stateChange);
+                            Server.QueueUserCommand(userCommand);
+                        }
                     }
                 };
 
@@ -170,7 +196,8 @@ namespace Example
 
                 game.MouseWheel += (sender, e) =>
                 {
-                    CameraWidth = (CameraHeight -= e.Delta);
+                    CameraWidth -= e.Delta * 3.0f/2;
+                    CameraHeight -= e.Delta;
                 };
 
                 // Run the game at 60 updates per second

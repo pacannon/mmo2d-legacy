@@ -110,6 +110,11 @@ namespace Mmo2d.Controller
                 return new State(States.CastFireball) { BoolVal = true, };
             }
 
+            if (userCommand.CastBlink.HasValue)
+            {
+                return new State(States.CastBlink) { Vector2Val = userCommand.CastBlink.Value, };
+            }
+
             return null;
         }
 
@@ -118,6 +123,7 @@ namespace Mmo2d.Controller
         {
             this[toggeableState.StateKind].BoolVal = toggeableState.BoolVal;
             this[toggeableState.StateKind].LongVal = toggeableState.LongVal;
+            this[toggeableState.StateKind].Vector2Val = toggeableState.Vector2Val;
             this[toggeableState.StateKind].Changed = toggeableState.Changed;
         }
 
@@ -126,6 +132,11 @@ namespace Mmo2d.Controller
             foreach (var state in ToggleableStates.Values)
             {
                 state.EraseMemory();
+
+                if (state.StateKind == States.CastBlink)
+                {
+                    state.Vector2Val = null;
+                }
             }
         }
 
@@ -139,6 +150,7 @@ namespace Mmo2d.Controller
             CastFireball,
             CastFrostbolt,
             CastFrostNova,
+            CastBlink,
             TargetId,
         }
 
@@ -148,6 +160,7 @@ namespace Mmo2d.Controller
 
             public bool? boolVal;
             public long? longVal;
+            public Vector2? vector2Val;
 
             public bool? BoolVal
             {
@@ -178,6 +191,23 @@ namespace Mmo2d.Controller
                     }
 
                     longVal = value;
+
+                    Changed = true;
+                }
+            }
+
+            public Vector2? Vector2Val
+            {
+                get { return vector2Val; }
+
+                set
+                {
+                    if (vector2Val == value)
+                    {
+                        return;
+                    }
+
+                    vector2Val = value;
 
                     Changed = true;
                 }

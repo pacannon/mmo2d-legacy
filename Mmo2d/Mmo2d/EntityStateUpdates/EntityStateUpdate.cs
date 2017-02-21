@@ -44,6 +44,7 @@ namespace Mmo2d.EntityStateUpdates
 
         public bool? ApplyChill { get; set; }
         public bool? ApplyFreeze { get; set; }
+        public Vector2? Blink { get; set; }
 
         [JsonIgnore]
         public bool ContainsInformation
@@ -52,7 +53,9 @@ namespace Mmo2d.EntityStateUpdates
             {
                 return Displacement.HasValue || Died.HasValue || Jumped.HasValue || AttackInitiated.HasValue ||
                     HpDeltas.Any() || KillsDelta.HasValue || AddFireball != null || RemoveProjectile.HasValue || 
-                    SetTargetId.HasValue || DeselectTarget.HasValue || StartCastFireball.HasValue || StartCastFrostbolt.HasValue || AutoAttack.HasValue || Remove.HasValue || Add != null || ApplyChill.HasValue || ApplyFreeze.HasValue;
+                    SetTargetId.HasValue || DeselectTarget.HasValue || StartCastFireball.HasValue || 
+                    StartCastFrostbolt.HasValue || AutoAttack.HasValue || Remove.HasValue || Add != null || 
+                    ApplyChill.HasValue || ApplyFreeze.HasValue || Blink.HasValue;
             }
         }
     }

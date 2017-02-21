@@ -18,12 +18,12 @@ namespace Mmo2d
         public const float speed = 0.09f;
         public const float width = 2.0f;
         public const float height = 2.0f;
-        public const float HalfAcceration = -9.81f / 2.0f;
+        public const float HalfAcceration = -25f / 2.0f;
         public const float MeleeRange = 1.5f;
         public const int HpRegen = 2;
 
         public static readonly TimeSpan AutoAttackPeriod = TimeSpan.FromMilliseconds(200.0);
-        public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(400.0);
+        public static readonly TimeSpan JumpAnimationDuration = TimeSpan.FromMilliseconds(500.0);
         public static readonly TimeSpan CastFireballCooldown = TimeSpan.FromMilliseconds(200.0);
         public static readonly TimeSpan AutoAttackCooldown = TimeSpan.FromMilliseconds(2000.0);
         public static readonly TimeSpan HpRegenTime = TimeSpan.FromMilliseconds(5000);
@@ -64,7 +64,7 @@ namespace Mmo2d
                     return 0.0f;
                 }
 
-                return (TimeSinceChilled != null ? 4.0f / 7.0f : 1.0f) * (IsGoblin.GetValueOrDefault() ? 1.3f : 1.0f);
+                return (TimeSinceChilled != null ? 4.0f / 7.0f : 1.0f) * (IsGoblin.GetValueOrDefault() ? 1.1f : 1.0f);
             }
         }
 
@@ -329,6 +329,11 @@ namespace Mmo2d
 
             else
             {
+                if (EntityController[EntityController.States.CastBlink].Vector2Val != null &&
+                    EntityController[EntityController.States.CastBlink].Vector2Val.Value != Vector2.Zero.Normalized())
+                {
+                    return Vector2.Multiply(EntityController[EntityController.States.CastBlink].Vector2Val.Value, 20.0f);
+                }
 
                 var displacementVector = Vector2.Multiply(EntityController.DirectionOfMotion, Speed);
 

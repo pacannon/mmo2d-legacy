@@ -63,6 +63,16 @@ namespace Mmo2d.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap blink {
+            get {
+                object obj = ResourceManager.GetObject("blink", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap fireball {
             get {
                 object obj = ResourceManager.GetObject("fireball", resourceCulture);
@@ -86,6 +96,16 @@ namespace Mmo2d.Properties {
         internal static System.Drawing.Bitmap frostbolt {
             get {
                 object obj = ResourceManager.GetObject("frostbolt", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap poly {
+            get {
+                object obj = ResourceManager.GetObject("poly", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

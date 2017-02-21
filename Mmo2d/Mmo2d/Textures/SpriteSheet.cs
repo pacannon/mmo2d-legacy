@@ -12,6 +12,8 @@ namespace Mmo2d.Textures
         public static SpriteSheet Fireball { get; private set; }
         public static SpriteSheet Frostbolt { get; private set; }
         public static SpriteSheet FrostNova { get; private set; }
+        public static SpriteSheet Blink { get; private set; }
+        public static SpriteSheet Poly { get; private set; }
 
         static SpriteSheet()
         {
@@ -20,6 +22,8 @@ namespace Mmo2d.Textures
             Fireball = new SpriteSheet(Mmo2d.Properties.Resources.fireball, 16, 0);
             Frostbolt = new SpriteSheet(Mmo2d.Properties.Resources.frostbolt, 16, 0);
             FrostNova = new SpriteSheet(Mmo2d.Properties.Resources.frost_nova, 16, 0);
+            Blink = new SpriteSheet(Mmo2d.Properties.Resources.blink, 16, 0);
+            Poly = new SpriteSheet(Mmo2d.Properties.Resources.poly, 16, 0);
         }
 
         public int TextureId { get; private set; }
